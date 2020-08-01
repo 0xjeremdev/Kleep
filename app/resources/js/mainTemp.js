@@ -9,6 +9,8 @@ const { clipboard} = require('electron');
 const PerfectScrollbar = require('perfect-scrollbar');
 const moment = require('moment');
 
+jQuery.fn.reverse = [].reverse;
+
 
 
 
@@ -296,7 +298,7 @@ function initializeMain() {
                     //console.log(clip);
                     var finalclip="";
                     
-                    clip.each(function(){
+                    clip.reverse().each(function(){
                          //console.log($(this).text());
                          var fullclip=shortenedClips[$(this).text()];
                         finalclip=finalclip+"\n"+fullclip

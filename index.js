@@ -221,7 +221,8 @@ function createSettingsWindow() {
 	
 	settingsWindow = new BrowserWindow({
 		parent: mainWindow,
-		modal: true,
+		//modal: true,
+		alwaysOnTop:true,
 		width: 500,
 		height: 500,
 		backgroundColor: "#f4f8ff",
@@ -255,11 +256,14 @@ function createSettingsWindow() {
 };
 
 
+
+
 function createUserWindow() {
 	
 	UserWindow = new BrowserWindow({
 		parent: mainWindow,
-		modal: true,	
+		//modal: true,	
+		alwaysOnTop:true,
 		width: 500,
 		height: 500,
 		backgroundColor: "#f4f8ff",
