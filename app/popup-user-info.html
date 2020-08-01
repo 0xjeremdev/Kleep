@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Kleep - Settings</title>
+
+		<!-- Custom CSS -->
+		<link rel="stylesheet" href="./resources/css/normalize.css" />
+		<link rel="stylesheet" href="./resources/css/popup-user-info.css" />
+	</head>
+
+	<body>
+		<div class="PopupUserInfo Content">
+			<!-- White Container -->
+			<div class="Box">
+
+				<!-- Main Content -->
+				<div class="container">
+
+					<!-- Plan -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Plan: <span class="alt">Free</span></h3>
+							<p class="note">
+								Enjoy Kleep’s full potential by upgrading your plan
+							</p>
+						</div>
+
+						<button class="button bg-blue" id="upgrade">Upgrade</button>
+					</div>
+
+					<!-- Personal Information Section -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Personal Information</h3>
+						</div>
+					</div>
+
+					<!-- Photo -->
+					<div class="item form-item">
+						<h4 class="form-name">Photo</h3>
+						<img class="photo" src="resources/assets/images/profile.jpg"/>
+						<button id="photoBtn" class="button change-button bg-green" value="change-photo">Change</button>
+					</div>
+
+					<!-- Name -->
+					<div class="item form-item">
+						<h4 class="form-name">Name</h3>
+						<span id="nameVal" class="form-value">Julian Cabada</span>
+						<button id="nameBtn" class="button change-button bg-green" value="change-name">Change</button>
+					</div>
+
+					<!-- Email -->
+					<div class="item form-item">
+						<h4 class="form-name">Email</h3>
+						<span id= "emailVal" class="form-value">jcabada96@gmail.com</span>
+						<button id="emailBtn" class="button change-button bg-green" value="change-email">Change</button>
+					</div>
+
+					<!-- Password -->
+					<div class="item form-item">
+						<h4 class="form-name bold">Password</h3>
+						<span class="form-value">***************</span>
+						<button id="passwordBtn" class="button change-button bg-green" value="change-password">Change</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Vendor JS -->
+		<script >window.$ = window.jQuery =require("./resources/js/jquery.min.js");</script>
+		<script src="./resources/js/jquery.min.js"></script>
+
+		<!-- Custom JS -->
+		<script src="./resources/js/user.js"></script>
+		<script>
+			initializePopupUserInfo();
+		</script>
+	</body>
+</html>

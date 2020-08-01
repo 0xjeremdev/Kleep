@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Kleep - Login</title>
+
+		<!-- Custom CSS -->
+		<link rel="stylesheet" href="./resources/css/normalize.css" />
+		<link rel="stylesheet" href="./resources/css/login.css" />
+	</head>
+
+	<body>
+		<div class="Login Content">
+			<!-- Container -->
+			<div class="Box">
+				<!-- Logo -->
+				<img class="logo" src="resources/assets/images/logo.png" />
+
+				<!-- Header -->
+				<h3 class="header text-blue">Welcome!</h3>
+
+				<!-- Description -->
+				<p class="description">
+					Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+					nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+					volutpat. Ut wisi enim ad minim veniam, quis nos
+				</p>
+
+				<!-- Form and Buttons -->
+				<div class="form">
+					<!-- Email -->
+					<input type="email" class="input" id="email" placeholder="Email ID" />
+
+					<!-- Password -->
+					<input
+						type="password"
+						class="input"
+						id="password"
+						placeholder="Password"
+					/>
+
+					<!-- Submit / Login button -->
+					<button class="btn-submit bg-blue" id="login">Log In</button>
+					
+				</div>
+
+				<div class="details">
+					<!-- Keep me Signed In -->
+					<div class="Checkbox">
+						<label>
+							<input type="checkbox" id="keep-me-signed-in" />
+							<span></span>
+							Keep me signed in
+						</label>
+					</div>
+
+					<!-- Forgot Password -->
+					<a class="link text-blue" href="javascript:void(0)">
+						Forgot Password?
+					</a>
+				</div>
+
+				<!-- Not a Member -->
+				<div class="not-a-member-container">
+					<!--
+					<a class="link text-blue" href="javascript:void(0)">
+						Not a member?
+					</a>
+				-->
+					<button class="btn-signup bg-blue" id="signup">Signup</button>
+				</div>
+			</div>
+			<!-- /Container -->
+		</div>
+
+		<!-- Vendor JS -->
+		<script >window.$ = window.jQuery =require("./resources/js/jquery.min.js");</script>
+
+		<script src="./resources/js/jquery.min.js"></script>
+
+		<!-- Custom JS -->
+		<script src="./resources/js/login.js"></script>
+		
+	</body>
+</html>

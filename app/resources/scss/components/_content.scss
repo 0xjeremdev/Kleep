@@ -1,0 +1,8 @@
+.Content {
+	min-width: 100%;
+	min-height: 100%;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: $background;
+	@include flex(center, center);
+}

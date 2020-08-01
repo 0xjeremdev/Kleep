@@ -1,0 +1,48 @@
+.dropdown-menu {
+	&,
+	ul {
+		padding: 0;
+		list-style-type: none;
+	}
+
+	.button {
+		@include button($color-gray, $color-black);
+		@include font($size: 16px);
+		padding: 4px 50px 4px 10px;
+		text-decoration: none;
+
+		&:after {
+			width: 7px;
+			height: 7px;
+			transform: rotate(-135deg) translateY(-20%) !important;
+		}
+	}
+
+	.dropdown-panel {
+		position: absolute;
+		margin-top: 10px;
+		margin-bottom: 30px;
+		border-radius: 4px;
+		background-color: $background;
+		-webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.1);
+		-moz-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.1);
+		box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.1);
+
+		li {
+			@include flex(flex-start, center);
+			@include font($size: 14px);
+			padding: 8px 15px;
+			opacity: 0.7;
+			cursor: pointer;
+
+			&:hover {
+				opacity: 1;
+			}
+
+			img {
+				width: 20px;
+				margin-right: 10px;
+			}
+		}
+	}
+}

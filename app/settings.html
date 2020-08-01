@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Kleep - Settings</title>
+
+		<!-- Custom CSS -->
+		<link rel="stylesheet" href="./resources/css/normalize.css" />
+		<link rel="stylesheet" href="./resources/css/settings.css" />
+	</head>
+
+	<body>
+		<div class="Settings Content">
+			<!-- Container -->
+			<div class="Box">
+				<!-- Logo -->
+				<img class="logo" src="resources/assets/images/logo.png" />
+
+				<!-- Header -->
+				<h3 class="header text-blue">Let’s set up some details</h3>
+
+				<!-- Description -->
+				<p class="description">You can always change this settings later</p>
+
+				<!-- Main Content -->
+				<div class="container">
+					<!-- Open App Shortcut -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">
+								Open App Shortcut <span class="shortcut-on hide">on</span>
+							</h3>
+							<p class="note">
+								Use this short cut to open up Kleep’s Dashboard
+							</p>
+						</div>
+
+						<span class="value shortcut bg-gray" id="hotkey-value">⌘ + K</span>
+					</div>
+
+					<!-- Copy Sound -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Copy Sound</h3>
+							<p class="note">
+								Little “click” sound when copying something
+							</p>
+						</div>
+
+						<label class="Switch">
+							<input type="checkbox" id="copy-sounds-input" />
+							<span class="slider round"></span>
+						</label>
+					</div>
+
+					<!-- Language -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Language</h3>
+						</div>
+
+						<span class="value bg-gray" id="language-input">English</span>
+					</div>
+
+					<!-- Date Format -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Date Format</h3>
+						</div>
+
+						<span class="value bg-gray" id="date-format-input">DD/MM/YY</span>
+					</div>
+
+					<!-- Time Format -->
+					<div class="item">
+						<div class="label">
+							<h3 class="name">Time Format</h3>
+						</div>
+
+						<span class="value bg-gray" id="time-format-input">12 Hours</span>
+					</div>
+				</div>
+
+				<!-- Ready Button -->
+				<button class="btn-submit bg-blue" id="ready">Ready!</button>
+			</div>
+
+			<!-- Snackbar -->
+			<div class="Snackbar" id="snackbar"></div>
+		</div>
+
+		<!-- Vendor JS -->
+		<script >window.$ = window.jQuery =require("./resources/js/jquery.min.js");</script>
+		<script src="./resources/js/jquery.min.js"></script>
+		<script src="./resources/vendor/hotkey/hotkey.min.js"></script>
+
+		<!-- Custom JS -->
+		<script src="./resources/js/settings.js"></script>
+		<script>
+			initializeSettings();
+		</script>
+	</body>
+</html>

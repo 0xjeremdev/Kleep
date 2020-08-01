@@ -1,0 +1,506 @@
+// Main
+@import "main.scss";
+
+// Components
+@import "components/box";
+@import "components/switch-reverse";
+@import "components/circular-checkbox";
+@import "components/dropdown-menu";
+@import "components/snackbar";
+
+$green: #39b54a;
+$violet: #662d92;
+$blue: #29abe2;
+$red: #ff0000;
+$yellow: #fcee21;
+
+.Main {
+	padding: 20px 40px 0;
+	min-width: 100%;
+	min-height: 100%;
+	background-color: $background;
+
+	.header {
+		width: 100%;
+		display: grid;
+		grid-template-columns: 0.3fr 0.7fr;
+		column-gap: 40px;
+
+		.logo {
+			flex-basis: 30%;
+			@include flex(center, center);
+
+			img {
+				height: 50px;
+			}
+		}
+
+		.configuration {
+			@include flex(space-between, flex-end);
+
+			#search {
+				width: 130px;
+				padding: 4px 10px;
+				background-color: #fff;
+				text-align: center;
+				border: 1px solid $color-gray;
+				border-radius: 20px;
+				outline: 0;
+				@include font($size: 14px);
+
+				&::placeholder {
+					color: $color-black;
+				}
+			}
+
+			.switch-container {
+				@include flex(stretch, center);
+
+				.SwitchReverse {
+					width: 35px;
+					height: 18px;
+					margin: 0 8px;
+
+					.slider {
+						&:before {
+							height: 12px;
+							width: 12px;
+							left: 3px;
+							bottom: 2px;
+						}
+					}
+				}
+
+				.switch-value {
+					@include font($size: 15px);
+					opacity: 0.8;
+				}
+			}
+
+			.kleeboard {
+				@include font($size: 20px);
+				margin-top: 8px;
+				display: block;
+			}
+
+			.date-container {
+				margin-top: 8px;
+				@include flex(stretch, center);
+
+				.date {
+					margin-left: -15px;
+					padding: 1px 10px 4px;
+					border: 1px solid $color-gray;
+					background-color: white;
+					display: block;
+					border-radius: 20px;
+					cursor: pointer;
+
+					.date-text {
+						@include font($size: 14px);
+
+						&.day {
+							padding: 0 5px;
+							border-left: 1px solid $color-gray;
+							border-right: 1px solid $color-gray;
+						}
+					}
+
+					.arrow-icon {
+						height: 10px;
+						width: 10px;
+						margin-left: 5px;
+						margin-bottom: -1px;
+					}
+				}
+
+				.btn-today {
+					height: 25px;
+					padding: 0 10px;
+					margin-left: 10px;
+					background-color: $color-blue;
+					color: white;
+					border: 0;
+					border-radius: 20px;
+					@include font($size: 13px);
+				}
+			}
+
+			.user {
+				align-self: center;
+
+				.container {
+					@include flex(flex-start, center);
+					border-top-left-radius: 23px;
+					border-bottom-left-radius: 23px;
+					border-top-right-radius: 7px;
+					border-bottom-right-radius: 7px;
+					width: 80px;
+					padding: 6px 8px;
+					background-color: #e2e2e2;
+					cursor: pointer;
+				}
+
+				.avatar {
+					width: 33px;
+					height: 33px;
+					border: 2px solid white;
+					border-radius: 50%;
+				}
+
+				.arrow-icon {
+					height: 10px;
+					width: 10px;
+					margin-top: 5px;
+					margin-left: 15px;
+				}
+			}
+		}
+	}
+
+	.main-content {
+		margin-top: 15px;
+		display: grid;
+		grid-template-columns: 0.3fr 0.7fr;
+		column-gap: 40px;
+
+		.folders {
+			.wrapper {
+				padding: 15px;
+				background-color: #fff;
+				border-radius: 10px;
+				border: 1px solid $color-gray;
+			}
+
+			.btn-new-folder {
+				@include button($color-green, white);
+				display: block;
+				border-radius: 0;
+				border-top-right-radius: 12px;
+				border-bottom-left-radius: 12px;
+			}
+
+			.list {
+				cursor: pointer;
+				padding-top: 5px;
+
+				.item {
+					margin-top: 10px;
+					@include flex(flex-start, center);
+					padding: 2px 5px;
+					border-radius: 5px;
+
+					&.active {
+						.title {
+							flex: none;
+							background-color: $color-blue;
+							color: white;
+							border-radius: 20px;
+						}
+					}
+
+					.CircularCheckbox label:before {
+						margin-bottom: 0;
+					}
+
+					.title {
+						@include flex(flex-start, center);
+						@include font($size: 18px);
+						color: #666666;
+						padding: 3px 10px;
+						flex: 1;
+
+						img {
+							margin-right: 5px;
+						}
+					}
+				}
+			}
+
+			#folder-bulk-actions {
+				margin-top: 30px;
+				margin-bottom: 9px;
+
+				.button {
+					text-align: left;
+					display: block;
+					background-color: $color-blue;
+					color: white;
+				}
+			}
+
+			.btn-settings {
+				@include flex(flex-start, center);
+				@include button(transparent, #858585);
+				@include font($size: 22px);
+				margin-top: 5px;
+				padding: 2px 0;
+
+				svg {
+					fill: #969696;
+					width: 40px;
+					height: 40px;
+					margin-right: 10px;
+				}
+			}
+		}
+
+		.contents {
+			.list {
+				padding: 15px 20px;
+				background-color: #fff;
+				border-radius: 10px;
+				border: 1px solid $color-gray;
+				position: relative;
+				height: 337px;
+
+				.item {
+					@include flex(flex-start, center);
+					border-radius: 5px;
+
+					&:not(:first-child) {
+						margin-top: 20px;
+					}
+
+					.date {
+						width: 30px;
+
+						.day {
+							@include font($size: 14px);
+							display: block;
+						}
+						.day-number {
+							@include font($size: 30px, $weight: 800);
+							margin: 0;
+							margin-top: -5px;
+							display: block;
+						}
+					}
+
+					.divider {
+						width: 1px;
+						height: 35px;
+						margin: 0 15px 0;
+						background-color: $color-black;
+						opacity: 0.2;
+					}
+
+					.details {
+						.CircularCheckbox label {
+							@include font($size: 20px);
+						}
+					}
+
+					.action-buttons {
+						@include flex();
+						margin-left: auto;
+						flex-shrink: 0;
+						position: relative;
+
+						@mixin action-button {
+							border: 0;
+							border-radius: 5px;
+							margin-left: 5px;
+						}
+
+						.btn-copy {
+							@include action-button;
+							@include button($color-green, white);
+							padding: 2px 15px;
+						}
+
+						.btn-more-settings {
+							@include action-button;
+							@include button($color-blue);
+							display: inline-block;
+						}
+
+						.btn-remove {
+							@include action-button;
+							@include button($color-yellow);
+						}
+
+						.dropdown-menu {
+							margin: 0 !important;
+
+							.dropdown-panel {
+								left: 0;
+								z-index: 2;
+							}
+						}
+					}
+				}
+			}
+
+			#content-bulk-actions {
+				margin-top: 15px;
+
+				.button {
+					width: 180px;
+					display: inline-block;
+					background-color: $color-blue;
+					text-align: left;
+					color: white;
+				}
+
+				.dropdown-panel {
+					max-width: 200px;
+				}
+			}
+		}
+	}
+}
+
+.dropdown-menu {
+	.modal-button {
+		@include flex(stretch, center);
+		text-decoration: none;
+		color: $color-black;
+	}
+}
+
+.cloneable {
+	display: none !important;
+}
+
+.modal {
+	width: 300px;
+	padding-left: 25px;
+	padding-right: 25px;
+	background-color: $background;
+	border: 0;
+	box-shadow: none;
+
+	.message {
+		@include font($size: 15px);
+		color: $color-black;
+	}
+}
+
+#modal-delete-confirmation {
+	.actions {
+		@include flex(center, center);
+
+		.btn-keep {
+			@include button($color-green, white);
+			width: 80px;
+		}
+
+		.btn-delete {
+			@include button($color-yellow, $color-black);
+			margin-left: 30px;
+			width: 80px;
+		}
+	}
+}
+
+#modal-new-folder {
+	.actions {
+		@include flex($align-items: center);
+
+		input {
+			padding: 4px;
+			border-radius: 5px;
+			outline: 0;
+			border: 1px solid $color-gray;
+			flex: 1;
+			@include font($size: 14px);
+		}
+
+		.btn-create {
+			@include button($color-blue, white);
+			height: auto;
+			margin-left: 8px;
+			width: 80px;
+			align-self: stretch;
+		}
+	}
+}
+
+#modal-color-selection {
+	padding-top: 30px;
+	.colors {
+		@include flex(center, center);
+		transition: 150ms;
+		cursor: pointer;
+
+		div {
+			@include flex(center, center);
+			height: 30px;
+			width: 30px;
+			border-radius: 50%;
+			margin: 0 10px 0;
+
+			img {
+				display: none;
+			}
+
+			&.selected {
+				border: 2px solid #5d6d7e;
+				transition: 150ms;
+
+				img {
+					display: block;
+				}
+			}
+
+			&.green {
+				background-color: $green;
+			}
+			&.violet {
+				background-color: $violet;
+			}
+			&.blue {
+				background-color: $blue;
+			}
+			&.red {
+				background-color: $red;
+			}
+			&.yellow {
+				background-color: $yellow;
+			}
+
+			&:not(.selected):hover {
+				transition: 150ms;
+				opacity: 0.4;
+			}
+		}
+	}
+
+	.actions {
+		@include flex(center, center);
+		margin-top: 30px;
+
+		.btn-cancel {
+			@include button($color-gray, $color-black);
+			width: 80px;
+		}
+
+		.btn-apply {
+			@include button($color-green, white);
+			margin-left: 30px;
+			width: 80px;
+
+			&:disabled {
+				opacity: 0.6;
+				cursor: initial;
+			}
+		}
+	}
+}
+
+.color-green {
+	background-color: $green;
+}
+.color-violet {
+	background-color: $violet;
+}
+.color-blue {
+	background-color: $blue;
+}
+.color-red {
+	background-color: $red;
+}
+.color-yellow {
+	background-color: $yellow;
+}

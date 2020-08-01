@@ -1,0 +1,19 @@
+// Abstract
+@import "abstract/variables";
+@import "abstract/fonts";
+@import "abstract/mixins";
+@import "abstract/util";
+
+p {
+	@include font;
+}
+
+html {
+	min-width: 100%;
+	min-height: 100%;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+}

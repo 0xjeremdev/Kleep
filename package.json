@@ -1,0 +1,59 @@
+{
+	"name": "kleep",
+	"productName": "Kleep",
+	"version": "1.0.0",
+	"description": "",
+	"repository": "",
+	"author": {
+		"name": "Roberto Mora",
+		"email": "robertomr100@gmail.com"
+	},
+	"scripts": {
+		"postinstall": "electron-builder install-app-deps",
+		"lint": "xo",
+		"test": "npm run lint",
+		"start": "electron .",
+		"pack": "electron-packager .",
+		"dist": "electron-builder",
+		"release": "np",
+		"scss": "sass --watch --no-source-map app/resources/scss:app/resources/css"
+	},
+	"dependencies": {
+		"@chenfengyuan/datepicker": "^1.0.9",
+		"electron-context-menu": "^0.15.2",
+		"electron-debug": "^3.1.0",
+		"electron-packager": "^15.0.0",
+		"electron-store": "^5.2.0",
+		"electron-unhandled": "^3.0.2",
+		"electron-util": "^0.13.1",
+		"firebase": "^7.15.3",
+		"jquery": "^3.5.1",
+		"moment": "^2.27.0",
+		"perfect-scrollbar": "^1.4.0"
+	},
+	"devDependencies": {
+		"electron": "^7.3.2",
+		"electron-builder": "^21.2.0",
+		"electron-updater": "^4.3.1",
+		"np": "^5.2.1",
+		"xo": "^0.25.4"
+	},
+	"xo": {
+		"envs": [
+			"node",
+			"browser"
+		]
+	},
+	"np": {
+		"publish": false,
+		"releaseDraft": false
+	},
+	"build": {
+		"appId": "com.company.AppName",
+		
+		"win": {
+			"target": "nsis"
+		
+		  }
+	}
+}

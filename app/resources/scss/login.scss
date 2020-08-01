@@ -1,0 +1,89 @@
+// Main
+@import "main.scss";
+
+// Components
+@import "components/box";
+@import "components/content";
+@import "components/checkbox";
+
+.Login {
+	@include full-size;
+
+	.logo {
+		height: 50px;
+		margin-top: 15px;
+		@include center;
+	}
+
+	.header {
+		margin: 0;
+		margin-top: 20px;
+		text-align: center;
+		@include font($size: 25px, $weight: 400);
+	}
+
+	.description {
+		margin: 20px 0 0 0;
+		text-align: center;
+		opacity: 0.7;
+		@include font($size: 12px);
+	}
+
+	.form {
+		margin-top: 25px;
+
+		.input {
+			width: 100%;
+			padding: 10px;
+			border: 0;
+			border-left: 4px solid $color-green;
+			background-color: $color-gray;
+			outline: 0;
+
+			&:nth-last-child(2) {
+				margin-top: 15px;
+			}
+
+			&::placeholder {
+				color: $color-black;
+				letter-spacing: 1px;
+			}
+		}
+
+		.btn-submit {
+			@include font($weight: bold);
+			@include center();
+			width: 200px;
+			margin-top: 25px;
+			padding: 7px;
+			border: 0;
+			border-radius: 20px;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			color: white;
+			outline: 0;
+			cursor: pointer;
+			transition: 150ms;
+
+			&:hover {
+				opacity: 0.8;
+				transition: 150ms;
+			}
+		}
+	}
+
+	.details {
+		@include flex(space-between, center);
+		margin-top: 40px;
+	}
+
+	.link {
+		@include font($size: 14px);
+		text-decoration: none;
+	}
+
+	.not-a-member-container {
+		text-align: center;
+		margin-top: 35px;
+	}
+}

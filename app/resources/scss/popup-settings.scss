@@ -1,0 +1,92 @@
+// Main
+@import "main.scss";
+
+// Components
+@import "components/box";
+@import "components/content";
+@import "components/switch";
+@import "components/snackbar";
+
+.PopupSettings {
+	@include full-size;
+
+	.container {
+		margin-top: 20px;
+
+		.item {
+			@include flex($align-items: center);
+
+			&:not(:first-child) {
+				margin-top: 25px;
+			}
+
+			.label {
+				.name {
+					@include font($size: 15px, $weight: bold);
+					@include flex(stretch, center);
+					margin: 0em;
+
+					.alt {
+						@include font($weight: 400);
+					}
+				}
+
+				.note {
+					@include font($size: 9px);
+					margin: 0;
+					opacity: 0.6;
+				}
+
+				.shortcut-on {
+					@include font($size: 8px, $weight: bold);
+					padding: 2px 9px;
+					background-color: $color-green;
+					margin-left: 8px;
+					border-radius: 9px;
+					color: white;
+					cursor: pointer;
+
+					&.hide {
+						display: none;
+					}
+				}
+			}
+
+			.value {
+				@include font($size: 12px);
+				display: block;
+				width: 100px;
+				padding: 5px 8px;
+				margin-left: auto;
+				text-align: center;
+				border-radius: 6px;
+				border: 1px solid rgba(0, 0, 0, 0.2);
+				cursor: pointer;
+
+				&.shortcut {
+					text-align: right;
+					font-size: 15px;
+				}
+			}
+
+			.Switch {
+				margin-left: auto;
+				margin-right: 20px;
+			}
+		}
+	}
+
+	.button {
+		@include button($color-yellow, $color-black);
+		@include font($weight: bold);
+		padding-top: 5px;
+		padding-bottom: 5px;
+		margin-left: auto;
+		width: 90px;
+
+		&#upgrade {
+			color: white;
+			background-color: $color-blue;
+		}
+	}
+}
