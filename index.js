@@ -37,7 +37,7 @@ const Tray = electron.Tray;
 let mainWindow;
 let settingsWindow;
 let UserWindow;
-const iconPath = path.join(__dirname, 'tray.png')
+const iconPath = path.join(__dirname, 'kleepTray.png')
 let tray = null
 
 app.on("ready",function() {
@@ -50,7 +50,7 @@ app.on("ready",function() {
 	}
 	else{
   
-	  tray.on('click',function(){
+	  tray.on('click',function(){ 
   
 		if(mainWindow==null)
 		{
@@ -159,6 +159,8 @@ app.on("window-all-closed", () => {
 });
 
 
+const nativeImage = require('electron').nativeImage;
+    var image = nativeImage.createFromPath(__dirname + '/IconoKleep.png'); 
 
 function createMainWindow() {
 
@@ -173,7 +175,8 @@ function createMainWindow() {
 		backgroundColor: "#f4f8ff",
 		webPreferences: {
 			nodeIntegration: true
-		  }
+		  },
+		icon:image
 	});
 
 	if(user){

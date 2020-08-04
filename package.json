@@ -1,6 +1,6 @@
 {
 	"name": "kleep",
-	"productName": "Kleep",
+	"productName": "kleep",
 	"version": "1.0.0",
 	"description": "",
 	"repository": "",
@@ -49,11 +49,16 @@
 		"releaseDraft": false
 	},
 	"build": {
-		"appId": "com.company.AppName",
+		"appId": "com.electron.kleep",
 		
 		"win": {
-			"target": "nsis"
+			"target": "nsis",
+			"icon": "KleepIcon.png"
 		
-		  }
+		  },
+		"mac":{
+			"icon": "KleepIcon.png",
+			"category": "public.app-category.developer-tools"
+		}
 	}
 }
