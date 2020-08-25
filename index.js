@@ -2,7 +2,7 @@
 const electron = require("electron");
 const path = require("path");
 const { app, BrowserWindow, Menu } = require("electron");
-/// const {autoUpdater} = require('electron-updater');
+const { autoUpdater } = require('electron-updater');
 const { is } = require("electron-util");
 const unhandled = require("electron-unhandled");
 const debug = require("electron-debug");
@@ -199,6 +199,7 @@ function createMainWindow() {
 
 	mainWindow.on("ready-to-show", () => {
 		mainWindow.show();
+		autoUpdater.checkForUpdatesAndNotify();
 	});
 
 	mainWindow.on("closed", () => {
@@ -219,6 +220,13 @@ function createMainWindow() {
 	
 };
 
+
+autoUpdater.on('update-available', () => {
+	mainWindow.webContents.send('update_available');
+  });
+  autoUpdater.on('update-downloaded', () => {
+	mainWindow.webContents.send('update_downloaded');
+  });
 
 function createSettingsWindow() {
 	
@@ -650,7 +658,10 @@ ipc.on("signup", function (event, args) {
 ipc.on("signin", function (event, args) {
 
   firebase.auth().signInWithEmailAndPassword(args[0], args[1]).then(function () {
-    event.sender.send("loginresult", "success");
+	event.sender.send("loginresult", "success");
+	
+	checkConnection();
+
   }).catch(function (error) {
     if (error !== null) {
       event.sender.send("loginresult", error);
@@ -737,6 +748,25 @@ function Logout() {
 
 ipc.on("getUser", function(event,arg){
 	event.sender.send("returnUser",firebase.auth().currentUser.email);
+})
+
+
+ipc.on("checkConnection", function(event,arg){
+		
+	event.sender.send('print', "INSIDE CHECKCONNECTION");
+
+		var connectedRef = firebase.database().ref(".info/connected");
+		connectedRef.once("value", function(snap) {
+		  if (snap.val() === true) {
+			event.sender.send('print', "&&&&&&&&&&&&&&&&&&&&&7CONNECTED&&&&&&&&&&&&&&&&7");
+		  } else {
+			event.sender.send('print', "&&&&&&&&&&&&&&&&&&&&&NOT&&&&&&&&&&&&&&&&");
+		  }
+		});
+		
+		
+
+
 })
 
 
@@ -1161,3 +1191,118 @@ ipc.on("deleteFolder",function(event,arg){
   ipc.on("resize-main", (event, arg) => {
 	mainWindow.setSize(800, 540);
 });
+
+
+ipc.on("setDisconnect",function(event,arg){
+	// Fetch the current user's ID from Firebase Authentication.
+	var uid = firebase.auth().currentUser.uid;
+
+	// Create a reference to this user's specific status node.
+	// This is where we will store data about being online/offline.
+	var userStatusDatabaseRef = firebase.database().ref(uid).child("Status");
+
+	// We'll create two constants which we will write to 
+	// the Realtime database when this device is offline
+	// or online.
+	var isOfflineForDatabase = {
+		state: 'offline',
+		last_changed: firebase.database.ServerValue.TIMESTAMP,
+	};
+
+	var isOnlineForDatabase = {
+		state: 'online',
+		last_changed: firebase.database.ServerValue.TIMESTAMP,
+	};
+
+	userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then(function(){
+
+		event.sender.send("print","DISCONNECTED");
+
+	});
+
+	event.sender.send("print","on Disconnect set!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+});
+
+
+
+
+function checkConnection(){
+
+// Fetch the current user's ID from Firebase Authentication.
+var uid = firebase.auth().currentUser.uid;
+
+// Create a reference to this user's specific status node.
+// This is where we will store data about being online/offline.
+var userStatusDatabaseRef = firebase.database().ref(uid).child("Status");
+
+// We'll create two constants which we will write to 
+// the Realtime database when this device is offline
+// or online.
+var isOfflineForDatabase = {
+    state: 'offline',
+    last_changed: firebase.database.ServerValue.TIMESTAMP,
+};
+
+var isOnlineForDatabase = {
+    state: 'online',
+    last_changed: firebase.database.ServerValue.TIMESTAMP,
+};
+
+// Create a reference to the special '.info/connected' path in 
+// Realtime Database. This path returns `true` when connected
+// and `false` when disconnected.
+firebase.database().ref('.info/connected').on('value', function(snapshot) {
+    // If we're not currently connected, don't do anything.
+    if (snapshot.val() == false) {
+	
+        return;
+    }
+	else
+	{
+		mainWindow.webContents.send("print","WE HAVE CONNECTION");
+	}
+
+    // If we are currently connected, then use the 'onDisconnect()' 
+    // method to add a set which will only trigger once this 
+    // client has disconnected by closing the app, 
+    // losing internet, or any other means.
+    userStatusDatabaseRef.onDisconnect().set(isOfflineForDatabase).then(function() {
+        // The promise returned from .onDisconnect().set() will
+        // resolve as soon as the server acknowledges the onDisconnect() 
+        // request, NOT once we've actually disconnected:
+        // https://firebase.google.com/docs/reference/js/firebase.database.OnDisconnect
+
+		
+        // We can now safely set ourselves as 'online' knowing that the
+        // server will mark us as offline once we lose connection.
+        userStatusDatabaseRef.set(isOnlineForDatabase);
+    });
+});
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

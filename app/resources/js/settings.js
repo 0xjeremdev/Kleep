@@ -83,7 +83,7 @@ const page = {
 
 // Usage: Languages data
 let copyMainIndex = 0;
-const languages = ["English", "日本語", "Deutsch", "français"];
+const languages = ["English", "Español"];
 
 // Usage: Date format data
 let selectedDateFormatIndex = 0;
@@ -219,7 +219,7 @@ function initializeSettings() {
 	});
 
 	// Event listener for Date Format
-	$("#date-format-input").click(function() {
+	/*$("#date-format-input").click(function() {
 		$(this).text(dateFormats[++selectedDateFormatIndex % dateFormats.length]);
 		console.log(
 			"Date Format",
@@ -231,6 +231,7 @@ function initializeSettings() {
         console.log("SENT")
 	});
 
+	*/
 	// Event listener for Time Format
 	$("#copy-main-input").click(function() {
 		$(this).text(copyMain[++copyMainIndex % copyMain.length]);
@@ -282,7 +283,7 @@ ipc.on("returnSettings",function(event,args){
 
 	 
     $("#language-input").text(args.language);
-     $("#date-format-input").text(args.dateFormat);
+    //$("#date-format-input").text(args.dateFormat);
 	 $("#copy-main-input").text(args.copyToMain);
 	if(args.sound=="Yes")
 	{
@@ -295,7 +296,7 @@ ipc.on("returnSettings",function(event,args){
 	
 	
     languageUser = $("#language-input").text();
-    dateUser = $("#date-format-input").text();
+   // dateUser = $("#date-format-input").text();
     copyMainUser = $("#copy-main-input").text();
     soundUser = $("#copy-sounds-input").is(":checked");
 

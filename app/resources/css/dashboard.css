@@ -517,10 +517,36 @@ height: auto;
   transition: 150ms;
   opacity: 0.7;
 }
+
+
+/*
+.Main .main-content .folders .list {
+  padding: 15px 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  border: 1px solid #e6e6e6;
+  position: relative;
+  height: 100px;
+}
+.Main .main-content .folders .list .item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  border-radius: 5px;
+}
+
+*/
+
+
 .Main .main-content .folders .list {
   cursor: pointer;
   padding-top: 5px;
+  position: relative;
+  height: 220px;
 }
+
+
 .Main .main-content .folders .list .item {
   margin-top: 10px;
   display: flex;
@@ -530,6 +556,8 @@ height: auto;
   padding: 2px 5px;
   border-radius: 5px;
 }
+
+
 .Main .main-content .folders .list .item.active .title {
   flex: none;
   background-color: #4784fa;
