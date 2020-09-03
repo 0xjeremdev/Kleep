@@ -23,6 +23,16 @@ var signupbtn = document.getElementById("signup");
 var signinbtn = document.getElementById("signin");
 
 
+$(document).ready(function(){
+    if (localStorage.getItem("remember")=="true")
+    {
+        $( "#remember-pass" ).prop( "checked", true );
+        $('#email').val(localStorage.getItem("user"));
+        $("#password").val(localStorage.getItem("password"));
+        console.log("aaaaa")
+    }
+})
+
 
 
 $('#login').click(function(){
@@ -58,6 +68,29 @@ signinbtn.addEventListener('click',function(){
 });
 */
 
+$('#remember-pass').click(function(){
+    console.log("eeeeeeeeeeeeee");
+    if($('#remember-pass').prop("checked") == true){
+        console.log("Checkbox is checked.");
+        localStorage.setItem("remember","true");
+    }
+    else{
+       
+        var x=localStorage.getItem("a");
+        console.log(x);
+        localStorage.setItem("remember","false");
+    }
+    
+})
+
+
+const password = document.querySelector('#password');
+$("#togglePassword").click(function(){
+    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+    password.setAttribute('type', type);
+    // toggle the eye slash icon
+    this.classList.toggle('fa-eye-slash');
+})
 
 
 ipc.on("loginresult",function(event,arg){
@@ -65,6 +98,13 @@ ipc.on("loginresult",function(event,arg){
     console.log("received");
     if(arg=="success")
     {
+        if (localStorage.getItem("remember")=="true")
+        {
+            localStorage.setItem("user",$('#email').val());
+            localStorage.setItem("password",$("#password").val());
+            
+        }
+
         ipc.send("changeMenu");
         redirect(page.MAIN);
     }
@@ -79,6 +119,12 @@ ipc.on("signupresult",function(event,arg){
     console.log("received");
     if(arg=="success")
     {
+        if (localStorage.getItem("remember")=="true")
+        {
+            localStorage.setItem("user",$('#email').val());
+            localStorage.setItem("password",$("#password").val());
+            
+        }s
         ipc.send("changeMenu");
         redirect(page.SETTINGS);
     }

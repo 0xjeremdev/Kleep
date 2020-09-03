@@ -844,6 +844,20 @@ ipc.on("newclip", function (event, args) {
    
   
   });
+
+  ipc.on("annotate",function(event, folder, clip, annotation){
+
+	var ref = database.ref(firebase.auth().currentUser.uid + "/Folders/" + folder + "/cliphistory").orderByChild("kleep").equalTo(clip);
+	ref.once("value").then(function (snapshot) {
+  
+		var clipid = Object.keys(snapshot.val())[0];
+		snapshot.ref.update({
+			[clipid + '/annotation']: annotation,
+			
+		  });
+		
+	  });
+  });
   
   
   
@@ -1118,7 +1132,9 @@ ipc.on("deleteFolder",function(event,arg){
 	firestore.collection(firebase.auth().currentUser.uid).add(
 	  {
 		image: clip.toDataURL(),
-		timestamp: d.getTime()
+		timestamp: d.getTime(),
+		width: 0,
+		height: 0
 	  }
 	).then(function (docRef) {
 	  event.sender.send("print", docRef.id);
@@ -1147,7 +1163,7 @@ ipc.on("deleteFolder",function(event,arg){
 	unsubscribe= firestore.collection(firebase.auth().currentUser.uid).onSnapshot(function(querySnapshot){
 	  var newImg =[]
 	  querySnapshot.forEach(documentSnapshot => {
-		newImg.push([documentSnapshot.get('image'), documentSnapshot.id, documentSnapshot.get('timestamp')]);
+		newImg.push([documentSnapshot.get('image'), documentSnapshot.id, documentSnapshot.get('timestamp'),documentSnapshot.get('width'),documentSnapshot.get('height')]);
   
 	  });
 	  event.sender.send("print","I AM INSIDE LISTENER");
@@ -1170,7 +1186,20 @@ ipc.on("deleteFolder",function(event,arg){
 	
   });
   
+  ipc.on("storeImageDimensions",function (event, w, h, image){
+	var dimensionRef=firestore.collection(firebase.auth().currentUser.uid).doc(image);
+
+
+	var setWithMerge = dimensionRef.set({
+		width: w,
+		height:h
+	}, { merge: true });
+
+
+	event.sender.send("print", "added dimensions")
+  })
   
+
   
   
   //delete a image

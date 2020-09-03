@@ -2,11 +2,14 @@
 const electron = require('electron');
 const ipc=electron.ipcRenderer;
 const { clipboard} = require('electron');
+const { dialog } = require('electron');
 const PerfectScrollbar = require('perfect-scrollbar');
 const moment = require('moment');
 const checkInternetConnected = require('check-internet-connected');
 
 jQuery.fn.reverse = [].reverse;
+
+var sizeOf = require('image-size');
 
 
 const nativeImage=electron.nativeImage;
@@ -35,10 +38,10 @@ const page = {
 
 // Usage: For dynamically inserting Folder contents in main.html
 let data = [];
-
 let images=[];
 let fdata= [];
 let shortenedClips={};
+let annotations = {};
 
 
 
@@ -357,17 +360,81 @@ function initializeMain() {
 ///////////////////////UI///////////////////////
 ////////////////////////////////////////////////
 
+$(document).on("hover","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
+  var fullclip=shortenedClips[$(this).text()];
+  var annot;
+  
+  if (fullclip in annotations)
+  {
+    
+     annot = annotations[fullclip];
+    
+  }
+  else
+  {
+    annot = "";
+   
+  }
 
 
+},
+function(){});
+
+$(document).on("dblclick","#folder-list .item .title", function(){
+    console.log($(this).text())
+    var del =confirm("Press a button!");
+    if(del == true)
+    {
+    if(fnameglobal==$(this).text())
+                    {
+                      $("#folder-Main").attr("class","item active");
+                     
+                      fnameglobal="Main";
+                      getTable();
+                      
+                    }
+
+                    ipc.send("deleteFolder",$(this).text());
+   }
+   
+
+});
 
 $(document).on("dblclick","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
   var fullclip=shortenedClips[$(this).text()];
+  var annot;
+ 
+  if (fullclip in annotations)
+  {
+     annot = annotations[fullclip];
+  }
+  else
+  {
+    annot = "";
+  }
+  
   if(isValidUrl(fullclip))
   {
    
     electron.shell.openExternal(fullclip);
     
   }
+  else
+  {
+   
+    $('#modal-fullclip .message').text(fullclip)
+    $('#modal-fullclip .actions #annotation').val(annot)
+    $('#modal-fullclip').modal()
+  }
+})
+
+$(".btn-annotate").click(function(){
+  var text= $('#modal-fullclip .message').text()
+  var ant =$('#modal-fullclip #annotation').val()
+  ipc.send("annotate", fnameglobal, text, ant);
+ 
+  $('#modal-fullclip .message').val('')
+  $('#modal-fullclip #annotation').val('')
 })
 
 
@@ -463,11 +530,7 @@ const generateFolders = function(query = "") {
 
     // If query is supplied, filter the list
     fdata.forEach(({ name }, index) => {
-        // Filter: Include content if there is supplied query text
-        // and supplied text is substring of content description
-        if (query.length > 0 && !description.includes(query)) {
-            return;
-        }
+        
 
         // Generate id for dropdown and checkbox
         const checkboxId = 'folder-id-'+name;
@@ -492,8 +555,8 @@ const generateFolders = function(query = "") {
         }
 
         newItem.find(".title").html('<img src="resources/assets/icons/folder-gray.svg" width="25" height="25">'+name)
-        newItem.find(".CircularCheckbox input").attr("id", checkboxId);
-        newItem.find(".CircularCheckbox label").attr("for", checkboxId);
+        //newItem.find(".CircularCheckbox input").attr("id", checkboxId);
+        //newItem.find(".CircularCheckbox label").attr("for", checkboxId);
         // Append / Add the item in list
         foldersList.find(".list").append(newItem);
         
@@ -504,57 +567,81 @@ const generateFolders = function(query = "") {
     
 };
 
+var lock=0;
+var count=0;
 // Add dynamic items in Folder Contents in main.html
 const generateImages = function(query = "") {
 
-  
-    // Initial date number
-    const startDate = 10;
+    console.log(Math.floor(Math.random()*1000)+1)
+    setTimeout(()=>{console.log("wtf"+count);},Math.floor(Math.random()*3000)+1000)
+    console.log("gener "+ lock )
+    console.log(count)
+    if(count==0)
+    {  
+      //lock=1;
+      
+      
+      // Initial date number
+      const startDate = 10;
 
-    // Get cloneable row
-    const item = $(".imageclone .cloneable");
-  
+      // Get cloneable row
+      const item = $(".imageclone .cloneable");
+    
 
-    // Remove items in Folder Contents list
-    container.find(".list").empty();
+      
 
-    // If query is supplied, filter the list
-    images.forEach(({ day, month,image,key }, index) => {
-        // Filter: Include content if there is supplied query text
-        // and supplied text is substring of content description
-        if (query.length > 0 && !description.includes(query)) {
-            return;
-        }
 
-        // Generate id for dropdown and checkbox
-        const dropdownId = `more-actions-${key}`;
-        const checkboxId = `checkbox-${key}`;
+      var finishloop = new Promise((resolve, reject) => {
+        // Remove items in Folder Contents list
+        console.log ("count inside " + count)        
+        container.find("#list-scrollbar").empty();
+        // If query is supplied, filter the list
+        images.forEach(({ day, month,image,key }, index) => {
+            // Filter: Include content if there is supplied query text
+            // and supplied text is substring of content description
+            if (query.length > 0 && !description.includes(query)) {
+                return;
+            }
 
-        // Clone the cloneable row
-        const newItem = item.clone();
+            // Generate id for dropdown and checkbox
+            const dropdownId = `more-actions-${key}`;
+            const checkboxId = `checkbox-${key}`;
 
-        // Remove cloneable class to so item will be shown
-        newItem.removeClass("cloneable");
+            // Clone the cloneable row
+            const newItem = item.clone();
 
-        // Update date data
-        newItem.find(".date .day").text(month);
-        newItem.find(".date .day-number").text(day);
-        newItem.find(".title .image").attr("src",image);
-        newItem.find(".title").attr("id",key);
-        // Update name / description data
-        //newItem.find(".details .query-name").text(description);
+            // Remove cloneable class to so item will be shown
+            newItem.removeClass("cloneable");
 
-        // Change dropdown id
-       // newItem.find(".dropdown-menu").attr("id", dropdownId);
-        newItem.find(".CircularCheckbox input").attr("id", checkboxId);
-        newItem.find(".CircularCheckbox label").attr("for", checkboxId);
+            // Update date data
+            newItem.find(".date .day").text(month);
+            newItem.find(".date .day-number").text(day);
+            newItem.find(".title .image").attr("src",image);
+            newItem.find(".title").attr("id",key);
+            // Update name / description data
+            //newItem.find(".details .query-name").text(description);
 
-        // Append / Add the item in list
-        container.find(".list").append(newItem);
+            // Change dropdown id
+          // newItem.find(".dropdown-menu").attr("id", dropdownId);
+            newItem.find(".CircularCheckbox input").attr("id", checkboxId);
+            newItem.find(".CircularCheckbox label").attr("for", checkboxId);
 
-        // Initialize the dropdown menu (important)
-       // initializeMetisMenu(`#${dropdownId}`);
-    });
+            // Append / Add the item in list
+            container.find(".list").append(newItem);
+            count++
+            if (index === images.length -1) resolve();
+            // Initialize the dropdown menu (important)
+          // initializeMetisMenu(`#${dropdownId}`);
+        });
+      });
+
+      finishloop.then(() =>{
+        lock=0;
+        console.log("finish" + lock + "count "+ count);
+        count=0;
+
+      })
+    }
 };
 
 function moveModal(){
@@ -728,6 +815,7 @@ function deleteModal() {
 
             }
 
+            /*
             else if (type === "folder-bulk") 
             {
         
@@ -781,7 +869,7 @@ function deleteModal() {
               })
              
             }
-            
+            */
            
            // Get snackbar element
           
@@ -921,18 +1009,18 @@ function getTable()
 {
 
   canUpdateDate=false;
-  console.log("test")
+  
   
   if(connected)
   {
     
-    console.log(fnameglobal)
+   
    
     //let filename = document.getElementById("fname").textContent;
     //filename = document.getElementById("fname").textContent;
     if(fnameglobal=="Images"){
       $("#list-scrollbar").addClass("images");
-     
+       
         ipc.send("getImages","x");
     }
     else
@@ -972,7 +1060,7 @@ setInterval(function(){
   if (canUpdateDate==true)
   {
   $('#btnToday').trigger("click");
-  console.log("TODAY")
+  
   }
   canUpdateDate=true;
   
@@ -981,10 +1069,10 @@ setInterval(function(){
 //constantly send a new clipboard to check if it is in the db
 setInterval(function(){
   
-    console.log(connected)
+    //console.log(connected)
     var clip = clipboard.readImage();
    
-    //if(clip.isEmpty())
+    
     if(Object.values(clipboard.availableFormats()).includes("text/rtf"))
     {
       //console.log(clipboard.readRTF());
@@ -1000,21 +1088,21 @@ setInterval(function(){
       
       if(toggleclip=="Checked" && connected)
       {
-      //let filename = document.getElementById("fname").textContent;
+      
      
       
       
       
       
-      //if (document.getElementById("temp").textContent!==clip)
+      
       if(lastclip!==clip&& clip.length>0)
       {
-        console.log("Found a new clip that is different from last clip: "+ lastclip);
+        //console.log("Found a new clip that is different from last clip: "+ lastclip);
         if(fnameglobal!=="Images")
         {
           args=[fnameglobal,clip,"white","create", isGroup];
           ipc.send('newclip',args);
-          console.log("sending newclip");
+         // console.log("sending newclip");
         }
         if(userSettings['sound']=="Yes")
         {
@@ -1025,7 +1113,7 @@ setInterval(function(){
           args=["Main",clip,"white","create", isGroup];
           
           ipc.send('newclip',args);
-          console.log("sending newclip to main");
+          //console.log("sending newclip to main");
         }
   
         let d = new Date()
@@ -1050,11 +1138,12 @@ setInterval(function(){
         
           if(lastclipImage.toDataURL()!==clip.toDataURL())
           {
-            console.log("Found new clip that is an image");
+            //console.log("Found new clip that is an image");
+            
             ipc.send("picture",'1');
-            console.log("Sending picture");
+          
        
-            //$('#imagesList').append('<li><img src="' + clip + '" /></li>'); 
+           
             lastclipImage=clip;
           
           
@@ -1063,9 +1152,10 @@ setInterval(function(){
   
         else{
             
-          console.log("Clipboard is FIRST image!");
+          //console.log("Clipboard is FIRST image!");
+         
           ipc.send("picture",'1');
-          console.log("Sending picture");
+          //console.log("Sending picture");
        
           //$('#imagesList').append('<li><img src="' + clip + '" /></li>'); 
           lastclipImage=clip;
@@ -1105,7 +1195,7 @@ now = moment().format("H:mm:ss");
     var year = (d .getFullYear());
     var hour = (d.getHours());
     var minutes = (d.getMinutes());
-    monthsArr=["January","February","March","April","May","June","July","August","September","October","November","December"]
+    monthsArr=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     if(format=="MM/DD/YYYY")
     {
       //return month + "/" + day + "/" + year+ "\n" + hour + ":" +minutes;
@@ -1156,12 +1246,29 @@ function resizedataURL(datas, wantedWidth, wantedHeight){
 
 
   function getImageDimensions(file) {
+    
+
+
     return new Promise (function (resolved, rejected) {
+     
+
+     
+
+      
+      
       var i = new Image()
       i.onload = function(){
+        
         resolved({w: i.width, h: i.height})
       };
-      i.src = file
+      i.onerror = function(){
+       
+        resolved({w: 0, h: 0})
+      }
+       i.src = file
+
+      
+     
     })
   }
   
@@ -1211,6 +1318,7 @@ ipc.on("table",function(event,arg){
    
     
     var entries = Object.values(arg);
+   
 
     //start from bottom
 
@@ -1219,12 +1327,20 @@ ipc.on("table",function(event,arg){
     {
         var d = new Date(entries[i].timestamp);
         fdate=GetFormattedDate(d,userSettings['dateFormat']);
-    data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color});
+        if('annotation' in entries[i])
+        {
+          data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color,"annotation":entries[i].annotation});
+          annotations[entries[i].kleep]=entries[i].annotation;
+        }
+        else
+        {
+          data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color});
+        }
    
               
     }
-  
-   
+    
+    
     generateData();
   });
 
@@ -1291,6 +1407,7 @@ ipc.on("newfile",function(event,arg){
 
 ipc.on("recieveImages",function(event,arg){
 
+    
     processArray(arg);
     async function processArray(arg){
     imagesArr={};
@@ -1305,31 +1422,47 @@ ipc.on("recieveImages",function(event,arg){
     
     //start from bottom
    
+
+   
     for(const item of sortedArg)
     {
      
-  
+      
      
       var newDataURI= item[0];
-      var dimensions = await getImageDimensions(newDataURI);
+
+      if(item[4]==0)
+      {
+       
+        var dimensions = await getImageDimensions(newDataURI);
+        ipc.send("storeImageDimensions",dimensions.w, dimensions.h, item[1]);
+      }
+      else{
+       
+        var dimensions = {w: item[3], h: item[4]} 
+      }
+       
+    
+      if(dimensions.w!=0 && newDataURI.length>100)
+      {
       
-      var ratio = dimensions.w/200;
+          var ratio = dimensions.w/200;
+        
+          var newHeight= dimensions.h/ratio;
+          var newImage = await resizedataURL(newDataURI, 200, newHeight);
+        
+        
+          var d = new Date(item[2]);
+          var fdate=GetFormattedDate(d,userSettings['dateFormat']);
+        
+          images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
+          imagesArr[item[2]]=item[1];
+          imagesOriginalSize[d]=item[0];
     
-      var newHeight= dimensions.h/ratio;
-      var newImage = await resizedataURL(newDataURI, 200, newHeight);
-     
-     
-     var d = new Date(item[2]);
-      var fdate=GetFormattedDate(d,userSettings['dateFormat']);
-    
-      images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
-     imagesArr[item[2]]=item[1];
-      imagesOriginalSize[d]=item[0];
-    
-  
-  
+      }
+      
     }
-    console.log(images)
+    
     generateImages();
   
    
@@ -1360,3 +1493,6 @@ ipc.on("update-downloaded",function(event,arg){
   console.log("UPDATE DOWNL")
   
 });
+
+//AKIA5643XVMRBWDJAHRA
+//oN/wIFQRwH/8M1VKn+OcAf5TFsOOV/bje5lgRL9u

@@ -1,9 +1,12 @@
 {
 	"name": "kleep",
 	"productName": "kleep",
-	"version": "1.0.0",
+	"version": "1.2.0",
 	"description": "",
-	"repository": "",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/robertomr100/Kleep.git"
+	},
 	"author": {
 		"name": "Roberto Mora",
 		"email": "robertomr100@gmail.com"
@@ -28,6 +31,7 @@
 		"electron-unhandled": "^3.0.2",
 		"electron-util": "^0.13.1",
 		"firebase": "^7.15.3",
+		"image-size": "^0.8.3",
 		"jquery": "^3.5.1",
 		"moment": "^2.27.0",
 		"perfect-scrollbar": "^1.4.0"
@@ -56,13 +60,8 @@
 			"icon": "KleepIcon.png"
 		},
 		"publish": {
-			"provider": "github",
-			"token": "ad8100b86bac8c5ae9b8f009a8b685e7c1b3fa0d",
-			"repository": {
-				"type" : "git",
-				"url" : "https://github.com/robertomr100/Kleep.git"
-			  }
-			
-		  }
+			"provider": "s3",
+			"bucket": "kleep"
+		}
 	}
 }
