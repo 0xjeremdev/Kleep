@@ -15,6 +15,8 @@ const mainPageLog = "main";
 const settingsPage ="popup-settings";
 const userPage ="popup-user-info";
 
+
+const sizeOf = require('image-size');
 unhandled();
 debug();
 contextMenu();
@@ -228,6 +230,7 @@ autoUpdater.on('update-available', () => {
 	mainWindow.webContents.send('update_downloaded');
   });
 
+  
 function createSettingsWindow() {
 	
 	settingsWindow = new BrowserWindow({
@@ -769,6 +772,17 @@ ipc.on("checkConnection", function(event,arg){
 
 })
 
+ipc.on("passwordRecovery",function(event,email){
+	event.sender.send("userback","IN");
+	var auth = firebase.auth();
+
+	auth.sendPasswordResetEmail(email).then(function() {
+		event.sender.send("userback","YES");
+	  }).catch(function(error) {
+		event.sender.send("userback","NO");
+	  });
+})
+
 
 
 
@@ -914,7 +928,7 @@ ipc.on("newclip", function (event, args) {
   //the renderer process is asking for the table
   ipc.on("gettable", function (event, fname, timeselected, isgroup) {
   
-	event.sender.send("print", "got this from gettable " + fname + timeselected);
+	//event.sender.send("print", "got this from gettable " + fname + timeselected);
 	
 	//reset the db ref
 	fileref.off();
@@ -928,7 +942,7 @@ ipc.on("newclip", function (event, args) {
 	//check if there is a specific time chosen
 	//ordered by time in ascending order
 	if (timeselected == 0) {
-	  mainWindow.webContents.send("print", "NO TIME FILTER" + timeselected);
+	  //mainWindow.webContents.send("print", "NO TIME FILTER" + timeselected);
 	  
 	  //check if it is a group folder
 	  if (isgroup == 0) {
@@ -961,7 +975,7 @@ ipc.on("newclip", function (event, args) {
 	  
 	  event.sender.send("table", orderedlist);
 	});
-	event.sender.send("print","INSIDEGETTABLE");
+	//event.sender.send("print","INSIDEGETTABLE");
   });
   
   
@@ -1129,12 +1143,16 @@ ipc.on("deleteFolder",function(event,arg){
   
 	let d = new Date();
 	var clip = clipboard.readImage();
+	var dimensions = sizeOf(clip.toPNG());
+
+	
+
 	firestore.collection(firebase.auth().currentUser.uid).add(
 	  {
 		image: clip.toDataURL(),
 		timestamp: d.getTime(),
-		width: 0,
-		height: 0
+		width: dimensions.width,
+		height: dimensions.height
 	  }
 	).then(function (docRef) {
 	  event.sender.send("print", docRef.id);
@@ -1157,9 +1175,11 @@ ipc.on("deleteFolder",function(event,arg){
 	if( typeof unsubscribe!== 'undefined')
 	{
 	unsubscribe();
+	
+	event.sender.send("print","unsub");
 	}
-	event.sender.send("print",unsubscribe);
 	//listener that checks for changes
+	
 	unsubscribe= firestore.collection(firebase.auth().currentUser.uid).onSnapshot(function(querySnapshot){
 	  var newImg =[]
 	  querySnapshot.forEach(documentSnapshot => {
@@ -1311,6 +1331,7 @@ firebase.database().ref('.info/connected').on('value', function(snapshot) {
 
 
 }
+
 
 
 

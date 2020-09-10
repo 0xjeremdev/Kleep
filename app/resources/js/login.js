@@ -3,6 +3,7 @@
 
 const electron = require('electron');
 const ipc=electron.ipcRenderer;
+const prompt = require('electron-prompt');
 
 
 const page = {
@@ -81,7 +82,32 @@ $('#remember-pass').click(function(){
         localStorage.setItem("remember","false");
     }
     
+});
+
+$('#forgotPassword').click(function(){
+   
+    prompt({
+        title: 'Prompt example',
+        label: 'email:',
+        value: '',
+        inputAttrs: {
+            type: 'text'
+        },
+        type: 'input'
+    })
+    .then((r) => {
+        if(r === null) {
+            console.log(r);
+        } else {
+            console.log("sent")
+            ipc.send("passwordRecovery", r);
+        }
+    })
+    .catch(console.error);
+    
 })
+
+
 
 
 const password = document.querySelector('#password');
@@ -124,7 +150,7 @@ ipc.on("signupresult",function(event,arg){
             localStorage.setItem("user",$('#email').val());
             localStorage.setItem("password",$("#password").val());
             
-        }s
+        }
         ipc.send("changeMenu");
         redirect(page.SETTINGS);
     }
@@ -138,3 +164,5 @@ ipc.on("userback",function(event,arg){
     console.log(arg);
     console.log("received");
 });
+
+

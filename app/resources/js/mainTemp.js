@@ -7,9 +7,11 @@ const PerfectScrollbar = require('perfect-scrollbar');
 const moment = require('moment');
 const checkInternetConnected = require('check-internet-connected');
 
+const sizeOf = require('image-size');
+
 jQuery.fn.reverse = [].reverse;
 
-var sizeOf = require('image-size');
+
 
 
 const nativeImage=electron.nativeImage;
@@ -23,6 +25,7 @@ var lastclipImage;
 var isGroup= "0";
 var imagesArr;
 var imagesOriginalSize;
+var amountOfImages=0;
 var init=0;
 var connected =true;
 var toBeDeleted;
@@ -152,7 +155,11 @@ function initializeMain() {
     // Initialize folder content on first load of page
     $(".folder-Main").attr("class","item active"); 
     
+    
     getTable();
+    //generateImages();
+    //ipc.send("getImages","x");
+    
     generateData();
     generateFolders();
    
@@ -360,6 +367,7 @@ function initializeMain() {
 ///////////////////////UI///////////////////////
 ////////////////////////////////////////////////
 
+/*
 $(document).on("hover","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
   var fullclip=shortenedClips[$(this).text()];
   var annot;
@@ -379,10 +387,11 @@ $(document).on("hover","#list-scrollbar .item .details .CircularCheckbox .query-
 
 },
 function(){});
+*/
 
 $(document).on("dblclick","#folder-list .item .title", function(){
     console.log($(this).text())
-    var del =confirm("Press a button!");
+    var del =confirm("Do you want to delete the folder "+ $(this).text()+"?");
     if(del == true)
     {
     if(fnameglobal==$(this).text())
@@ -399,6 +408,37 @@ $(document).on("dblclick","#folder-list .item .title", function(){
    
 
 });
+
+
+/*
+$(document).on("dblclick","#list-scrollbar .item .title .image", function(){
+  
+
+  copyItem= $(this).parent();
+  imageKey=copyItem.attr("id");
+  console.log(imageKey)
+  var imgCopy;
+  for(let i in images)
+  {
+      
+      if(images[i].key==imageKey)
+      {
+          imgCopy=images[i].originalImage;
+          //var newImage= nativeImage.createFromDataURL(imgCopy);
+          //clipboard.writeImage(newImage);
+          $('#modal-image .image').attr("src", imgCopy)
+          //$('#modal-fullclip .actions #annotation').val("annot")
+          $('#modal-image').modal()
+      }
+  }
+
+
+ 
+    //img
+
+});
+
+*/
 
 $(document).on("dblclick","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
   var fullclip=shortenedClips[$(this).text()];
@@ -572,13 +612,8 @@ var count=0;
 // Add dynamic items in Folder Contents in main.html
 const generateImages = function(query = "") {
 
-    console.log(Math.floor(Math.random()*1000)+1)
-    setTimeout(()=>{console.log("wtf"+count);},Math.floor(Math.random()*3000)+1000)
-    console.log("gener "+ lock )
-    console.log(count)
-    if(count==0)
-    {  
-      //lock=1;
+    
+   
       
       
       // Initial date number
@@ -593,16 +628,16 @@ const generateImages = function(query = "") {
 
       var finishloop = new Promise((resolve, reject) => {
         // Remove items in Folder Contents list
-        console.log ("count inside " + count)        
+       
         container.find("#list-scrollbar").empty();
         // If query is supplied, filter the list
-        images.forEach(({ day, month,image,key }, index) => {
+        images.forEach(({ day, month,image,key, fulldate }, index) => {
             // Filter: Include content if there is supplied query text
             // and supplied text is substring of content description
             if (query.length > 0 && !description.includes(query)) {
                 return;
             }
-
+           
             // Generate id for dropdown and checkbox
             const dropdownId = `more-actions-${key}`;
             const checkboxId = `checkbox-${key}`;
@@ -627,21 +662,19 @@ const generateImages = function(query = "") {
             newItem.find(".CircularCheckbox label").attr("for", checkboxId);
 
             // Append / Add the item in list
-            container.find(".list").append(newItem);
-            count++
+            if(fulldate < timeglobal)
+            {
+                container.find(".list").append(newItem);
+            }
+           
             if (index === images.length -1) resolve();
             // Initialize the dropdown menu (important)
           // initializeMetisMenu(`#${dropdownId}`);
         });
       });
 
-      finishloop.then(() =>{
-        lock=0;
-        console.log("finish" + lock + "count "+ count);
-        count=0;
-
-      })
-    }
+     
+    
 };
 
 function moveModal(){
@@ -1014,14 +1047,30 @@ function getTable()
   if(connected)
   {
     
-   
+    console.log(images.length)
+    if(images.length==0)
+    {
+
+      ipc.send("getImages","x");
+    }
+
    
     //let filename = document.getElementById("fname").textContent;
     //filename = document.getElementById("fname").textContent;
     if(fnameglobal=="Images"){
       $("#list-scrollbar").addClass("images");
        
+      //console.log(images.length)
+      if(images.length==0)
+      {
+
         ipc.send("getImages","x");
+      }
+      else{
+        generateImages()
+        ipc.send("getImages","x");
+      }
+        
     }
     else
     {
@@ -1068,6 +1117,8 @@ setInterval(function(){
 
 //constantly send a new clipboard to check if it is in the db
 setInterval(function(){
+
+
   
     //console.log(connected)
     var clip = clipboard.readImage();
@@ -1139,7 +1190,9 @@ setInterval(function(){
           if(lastclipImage.toDataURL()!==clip.toDataURL())
           {
             //console.log("Found new clip that is an image");
-            
+          
+            var dimensions = sizeOf(clip.toPNG());
+            console.log(dimensions)
             ipc.send("picture",'1');
           
        
@@ -1407,66 +1460,68 @@ ipc.on("newfile",function(event,arg){
 
 ipc.on("recieveImages",function(event,arg){
 
-    
+   
     processArray(arg);
-    async function processArray(arg){
-    imagesArr={};
-    imagesOriginalSize={};
-    images=[]
-
-    
-      var sortedArg = arg.sort(function(a, b) {
-        return b[2] - a[2];
-      });
-  
-    
-    //start from bottom
-   
-
-   
-    for(const item of sortedArg)
+    async function processArray(arg)
     {
-     
-      
-     
-      var newDataURI= item[0];
+      imagesArr={};
+      imagesOriginalSize={};
+      images=[]
 
-      if(item[4]==0)
-      {
-       
-        var dimensions = await getImageDimensions(newDataURI);
-        ipc.send("storeImageDimensions",dimensions.w, dimensions.h, item[1]);
-      }
-      else{
-       
-        var dimensions = {w: item[3], h: item[4]} 
-      }
-       
+      
+        var sortedArg = arg.sort(function(a, b) {
+          return b[2] - a[2];
+        });
     
-      if(dimensions.w!=0 && newDataURI.length>100)
+      
+      //start from bottom
+    
+
+    
+      for(const item of sortedArg)
       {
       
-          var ratio = dimensions.w/200;
         
-          var newHeight= dimensions.h/ratio;
-          var newImage = await resizedataURL(newDataURI, 200, newHeight);
+      
+        var newDataURI= item[0];
+
+        if(item[4]==0)
+        {
         
+          var dimensions = await getImageDimensions(newDataURI);
+          //ipc.send("storeImageDimensions",dimensions.w, dimensions.h, item[1]);
+        }
+        else{
         
-          var d = new Date(item[2]);
-          var fdate=GetFormattedDate(d,userSettings['dateFormat']);
+          var dimensions = {w: item[3], h: item[4]} 
+        }
         
-          images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
-          imagesArr[item[2]]=item[1];
-          imagesOriginalSize[d]=item[0];
-    
+      
+        if(dimensions.w!=0 && newDataURI.length>100)
+        {
+        
+            var ratio = dimensions.w/200;
+          
+            var newHeight= dimensions.h/ratio;
+            var newImage = await resizedataURL(newDataURI, 200, newHeight);
+          
+          
+            var d = new Date(item[2]);
+            var fdate=GetFormattedDate(d,userSettings['dateFormat']);
+          
+            images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
+            imagesArr[item[2]]=item[1];
+            imagesOriginalSize[d]=item[0];
+      
+        }
+        
       }
       
-    }
-    
-    generateImages();
+      console.log(images)
+      generateImages();
   
    
-  }
+    }
   })
 
 
@@ -1496,3 +1551,9 @@ ipc.on("update-downloaded",function(event,arg){
 
 //AKIA5643XVMRBWDJAHRA
 //oN/wIFQRwH/8M1VKn+OcAf5TFsOOV/bje5lgRL9u
+
+
+$("#list-scrollbar .item").mouseover(function(){
+  console.log("aaaaaaaaaaaaaaaaaaaaaaaa")
+}
+)
