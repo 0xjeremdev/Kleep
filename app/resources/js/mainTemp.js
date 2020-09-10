@@ -1532,6 +1532,11 @@ ipc.on("print",function(event,arg)
   //console.log(arg);
 });
 
+ipc.on("print1",function(event,arg)
+{
+  console.log("PRINT TROUBLESHOOT:");
+  console.log(arg);
+});
 
 ipc.on("logout",function(event,arg){
     console.log("LOGGING OUT")
