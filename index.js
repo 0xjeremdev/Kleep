@@ -1141,10 +1141,19 @@ ipc.on("deleteFolder",function(event,arg){
   //store a image
   ipc.on("picture", function (event, arg) {
   
+	var dimensions={};
+	dimensions.width=0;
+	dimensions.height=0;
 	let d = new Date();
-	var clip = clipboard.readImage();
-	var dimensions = sizeOf(clip.toPNG());
-
+	try {
+		var clip = clipboard.readImage();
+		dimensions = sizeOf(clip.toPNG());
+		event.sender.send("print1","dimension w" + typeof dimensions);
+	} catch (error) {
+		event.sender.send("print1", error);
+		
+	}
+	
 	
 
 	firestore.collection(firebase.auth().currentUser.uid).add(
