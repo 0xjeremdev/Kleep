@@ -17,11 +17,12 @@
 		<link
 		rel="stylesheet"
 		href="resources/vendor/perfect-scrollbar/css/perfect-scrollbar.css"
-	/>
-
+		/>
+		<link rel="stylesheet" href="resources/vendor/spin/spin.css" />
 		<!-- Custom CSS -->
 		<link rel="stylesheet" href="resources/css/normalize.css" />
 		<link rel="stylesheet" href="resources/css/dashboard.css" />
+		
 	</head>
 
 	<body>
@@ -97,6 +98,19 @@
 					/>
 					test add
 				</span>
+
+				<a
+						class="btn-folder"
+						href="#modal-delete-confirmation"
+						rel="modal:open"
+						value="delete-folder"
+					>
+						<img
+							src="resources/assets/icons/trash-gray.svg"
+							height="12"
+							width="12"
+						/>
+					</a>
 			</div>
 
 		</div>
@@ -104,7 +118,7 @@
 			<!-- Header Section -->
 			<div class="header">
 				<!-- Column: Logo -->
-				<div class="logo">
+				<div class="logo" id="logo">
 					<img class="logo" src="resources/assets/images/logo.png" />
 				</div>
 
@@ -356,6 +370,8 @@
 				</div>
 			</div>
 
+			
+
 			<div id="modal-move-folder" class="modal">
 				<p class="message">Please select a folder name.</p>
 				<div class="actions">
@@ -547,6 +563,7 @@
 		<script src="resources/vendor/metis-menu/dist/metismenujs.min.js"></script>
 		<script src="resources/vendor/modal/modal.min.js"></script>
 		<script src="resources/vendor/datepicker/datepicker.min.js"></script>
+		<script type="module" src="resources/vendor/spin/spin.js"></script>
 
 		<!-- Custom JS -->
 		<script src="resources/js/mainTemp.js"></script>

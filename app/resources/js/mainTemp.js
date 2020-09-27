@@ -2,14 +2,22 @@
 const electron = require('electron');
 const ipc=electron.ipcRenderer;
 const { clipboard} = require('electron');
-const { dialog } = require('electron');
+const { dialog } = require('electron').remote;
 const PerfectScrollbar = require('perfect-scrollbar');
 const moment = require('moment');
 const checkInternetConnected = require('check-internet-connected');
+var loadingSpinner = require('loading-spinner');
 
 const sizeOf = require('image-size');
 
 jQuery.fn.reverse = [].reverse;
+
+
+
+
+
+
+
 
 
 
@@ -29,6 +37,7 @@ var amountOfImages=0;
 var init=0;
 var connected =true;
 var toBeDeleted;
+var toBeDeletedFolder;
 var canUpdateDate=false;
 
 
@@ -81,6 +90,9 @@ const foldersList = $(".main-content .folders");
 
     // Main
 function initializeMain() {
+
+
+ 
   //const container = $(".main-content .contents");
 
 	// Initialize scrollbar
@@ -112,9 +124,16 @@ function initializeMain() {
     });
 
     $('#btnToday').click(function(){
+
+      let options  = {
+        buttons: ["Yes","No","Cancel"],
+        message: "update-available"
+         }
+         let response = dialog.showMessageBox(options);
+
      
-     
-      ipc.send("setDisconnect","");
+      //ipc.send("setDisconnect","");
+      
 
      $("#datepicker-trigger").datepicker("setDate", new Date());
      //$("#pickMonth").text(moment.format("MMMM"))
@@ -126,26 +145,6 @@ function initializeMain() {
     })
     
   
-
-	// Folder click listener
-	const activeImageSrc = "resources/assets/icons/folder-white.svg";
-	const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
-	$(".folders .list .item .title").click(function() {
-		// Set all to inactive
-		$(".folders .list .item")
-			.removeClass("active")
-			.find("img")
-			.attr("src", inactiveImageSrc);
-
-		// Set clicked to active
-		$(this)
-			.parents(".item")
-			.addClass("active")
-			.find("img")
-            .attr("src", activeImageSrc);
-            
-        
-	});
 
    
 
@@ -217,7 +216,16 @@ function initializeMain() {
         toBeDeleted= $(this).parent().parent();
 
         
-	});
+  });
+
+  $(document).on("click", ".btn-folder", function() {
+    // Log data
+   
+    toBeDeletedFolder= $(this).parent();
+    console.log(toBeDeletedFolder)
+    
+});
+  
 
    
 
@@ -389,25 +397,7 @@ $(document).on("hover","#list-scrollbar .item .details .CircularCheckbox .query-
 function(){});
 */
 
-$(document).on("dblclick","#folder-list .item .title", function(){
-    console.log($(this).text())
-    var del =confirm("Do you want to delete the folder "+ $(this).text()+"?");
-    if(del == true)
-    {
-    if(fnameglobal==$(this).text())
-                    {
-                      $("#folder-Main").attr("class","item active");
-                     
-                      fnameglobal="Main";
-                      getTable();
-                      
-                    }
 
-                    ipc.send("deleteFolder",$(this).text());
-   }
-   
-
-});
 
 
 /*
@@ -848,19 +838,15 @@ function deleteModal() {
 
             }
 
-            /*
-            else if (type === "folder-bulk") 
+            
+            else if (type === "delete-folder") 
             {
         
-              elements = $(".folders .list > .item").has(
-                '.CircularCheckbox [type="checkbox"]:checked'
-              );
+                console.log(toBeDeletedFolder.find(".title"))
+                var folderName = toBeDeletedFolder.find(".title").text()
+             
               
-              var folderNames = elements.find(".title")
-              folderNames.each(function(){
-                var name =$(this).text();
-              
-                if(name=="Main")
+                if(folderName=="Main")
                 {
                   snackbar.text("Can't remove Main");
 
@@ -873,7 +859,7 @@ function deleteModal() {
                   }, 3000);
                 }
 
-                else if(name=="Images")
+                else if(folderName=="Images")
                 {
 
                   snackbar.text("Can't remove Images");
@@ -888,7 +874,7 @@ function deleteModal() {
                 }
                 else
                 {
-                    if(fnameglobal==name)
+                    if(fnameglobal==folderName)
                     {
                       $("#folder-Main").attr("class","item active");
                      
@@ -896,13 +882,13 @@ function deleteModal() {
                       getTable();
                       
                     }
-
-                    ipc.send("deleteFolder",name);
+                    console.log(folderName)
+                    ipc.send("deleteFolder",folderName);
                 }
-              })
+             
              
             }
-            */
+            
            
            // Get snackbar element
           
@@ -999,16 +985,15 @@ const activeImageSrc = "resources/assets/icons/folder-white.svg";
 const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
 $(".folders .list .item .title").click(function() {
 // Set all to inactive
-$(".folders .list .item")
-    .removeClass("active")
-    .find("img")
-    .attr("src", inactiveImageSrc);
+$(".folders .list .item").removeClass("active")
+
+$(".folders .list .item .title").find("img").attr("src", inactiveImageSrc);
 
 // Set clicked to active
 $(this)
     .parents(".item")
     .addClass("active")
-    .find("img")
+    .find(".title img")
     .attr("src", activeImageSrc);
     fnameglobal=$(this).text();
     
@@ -1058,8 +1043,10 @@ function getTable()
     //let filename = document.getElementById("fname").textContent;
     //filename = document.getElementById("fname").textContent;
     if(fnameglobal=="Images"){
-      $("#list-scrollbar").addClass("images");
-       
+      console.log("aaaaaaaaaaaaa")
+      
+      $("#list-scrollbar").empty().addClass("images");
+      $("#list-scrollbar").append("<div class='loader'></div>") 
       //console.log(images.length)
       if(images.length==0)
       {
@@ -1460,7 +1447,8 @@ ipc.on("newfile",function(event,arg){
 
 ipc.on("recieveImages",function(event,arg){
 
-   
+    
+    
     processArray(arg);
     async function processArray(arg)
     {
@@ -1516,7 +1504,7 @@ ipc.on("recieveImages",function(event,arg){
         }
         
       }
-      
+      $('.loader').remove()
       console.log(images)
       generateImages();
   
@@ -1532,9 +1520,9 @@ ipc.on("print",function(event,arg)
   //console.log(arg);
 });
 
-ipc.on("print1",function(event,arg)
+ipc.on("printerror",function(event,arg)
 {
-  console.log("PRINT TROUBLESHOOT:");
+  console.log("PRINT ERROR:");
   console.log(arg);
 });
 
@@ -1545,14 +1533,20 @@ ipc.on("logout",function(event,arg){
 
 
 ipc.on("update-available",function(event,arg){
-  console.log("UPDATE AVL")
-  
-});
+  let options  = {
+    buttons: ["Yes","No","Cancel"],
+    message: "update-available"
+     }
+     let response = dialog.showMessageBox(options);
+})
 
-ipc.on("update-downloaded",function(event,arg){
-  console.log("UPDATE DOWNL")
-  
-});
+ipc.on("update-available",function(event,arg){
+  let options  = {
+    buttons: ["Yes","No","Cancel"],
+    message: "update-Down"
+     }
+     let response = dialog.showMessageBox(options);
+})
 
 //AKIA5643XVMRBWDJAHRA
 //oN/wIFQRwH/8M1VKn+OcAf5TFsOOV/bje5lgRL9u
@@ -1562,3 +1556,5 @@ $("#list-scrollbar .item").mouseover(function(){
   console.log("aaaaaaaaaaaaaaaaaaaaaaaa")
 }
 )
+
+
