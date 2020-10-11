@@ -133,7 +133,7 @@ app.on("activate", () => {
 	}
 });
 
-
+app.on('window-all-closed', e => e.preventDefault() )
 
 
 
@@ -763,7 +763,7 @@ ipc.on("passwordRecovery", function(event, email) {
 ////////////////////////
 
 //Add a new clip to  the database
-//need to fix
+
 ipc.on("newclip", function(event, args) {
 	try{
 		let d = new Date();
@@ -988,7 +988,7 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup) {
 	catch(error){
 		event.sender.send("printerror",error )
 	}
-	//event.sender.send("print","INSIDEGETTABLE");
+	
 });
 
 //send the time to renderer process
@@ -1443,3 +1443,86 @@ function checkConnection() {
 				});
 		});
 }
+
+
+var lastclip;
+setInterval(function() {
+	console.log("IN")
+	//here we sync
+	if (firebase.auth().currentUser && mainWindow==null)
+	{
+		fileref.off()
+		var clip = clipboard.readText();
+		console.log("lastclip: "+lastclip)
+		console.log("clip: "+clip)
+
+		
+		if(lastclip !== clip && clip.length > 0)
+		{
+			try{
+				let d = new Date();
+				//found is used to check if the clip is already in the current folder
+				let found = 0;
+		
+				//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
+				
+					var refsync = database
+						.ref(
+							firebase.auth().currentUser.uid + "/Folders/Main/cliphistory"
+						)
+						.orderByChild("kleep")
+						.equalTo(clip);
+				 
+		
+				refsync
+					.once("value")
+					.then(function(snapshot) {
+						//if it exists then update the timestamp of the clip
+						if (snapshot.exists()) {
+							found = found + snapshot.numChildren();
+							var clipid = Object.keys(snapshot.val())[0];
+							
+							
+								snapshot.ref.update({
+									[clipid + "/timestamp"]: d.getTime()
+								
+								});
+							
+							
+						}
+					})
+					.then(function() {
+						//had to do a the instead of else as a new db ref was needed
+						//here we go ahead and create it if it wasn't there
+						if (found == 0) {
+							
+							var dbrefsync = database.ref();
+							
+								var newcliprefsync = dbrefsync
+									.child(firebase.auth().currentUser.uid)
+									.child("Folders")
+									.child("Main")
+									.child("cliphistory")
+									.push();
+							
+		
+							newcliprefsync.set({
+								kleep: clip,
+								timestamp: d.getTime(),
+								color: "white"
+							});
+						
+							
+							console.log("NOT FOUND NEED TO INSERT")
+						} 
+					});
+				}
+				catch(error){
+					
+				}
+
+				
+		}
+		lastclip=clip;	
+	}
+}, 2000);
