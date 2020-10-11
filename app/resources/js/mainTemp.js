@@ -1,15 +1,23 @@
-/**
- * This file contains the script used to manipulate HTML elements.
- * Initialization of libraries are also present in this file.
- */
 
 const electron = require('electron');
 const ipc=electron.ipcRenderer;
 const { clipboard} = require('electron');
+const { dialog } = require('electron').remote;
 const PerfectScrollbar = require('perfect-scrollbar');
 const moment = require('moment');
+const checkInternetConnected = require('check-internet-connected');
+var loadingSpinner = require('loading-spinner');
+
+const sizeOf = require('image-size');
 
 jQuery.fn.reverse = [].reverse;
+
+
+
+
+
+
+
 
 
 
@@ -25,9 +33,12 @@ var lastclipImage;
 var isGroup= "0";
 var imagesArr;
 var imagesOriginalSize;
+var amountOfImages=0;
 var init=0;
-
+var connected =true;
 var toBeDeleted;
+var toBeDeletedFolder;
+var canUpdateDate=false;
 
 
 // Usage: For redirecting to different pages
@@ -39,32 +50,12 @@ const page = {
 
 // Usage: For dynamically inserting Folder contents in main.html
 let data = [];
-
 let images=[];
 let fdata= [];
 let shortenedClips={};
+let annotations = {};
 
-// Usage: Languages data
-let selectedTimeFormatIndex = 0;
-const languages = ["English", "日本語", "Deutsch", "français"];
 
-// Usage: Date format data
-let selectedDateFormatIndex = 0;
-const dateFormats = [
-	"DD/MM/YY",
-	"DD/MM/YYY",
-	"DD-MM-YY",
-	"DD-MM-YYYY",
-	"MM DD,YYYY"
-];
-
-// Usage: Time format data
-let selectedLanguageIndex = 0;
-const timeFormats = ["12-Hours", "24-Hours"];
-
-// Usage: Toggle hotkey input
-const SETTINGS_HOTKEY_SCOPE = "settings";
-const DEFAULT_HOTKEY_SCOPE = "all";
 
 /**
  * For redirecting to a page. Uses `page` object
@@ -90,21 +81,6 @@ function initializeMetisMenu(element) {
 	});
 }
 
-// Settings
-function hotkeysInitialization(container) {
-	hotkeys("*", SETTINGS_HOTKEY_SCOPE, function(event, handler) {
-		const keys = hotkeys.getPressedKeyCodes();
-		const symbolKeys = keys
-			.filter(keyCode => keyboardMap.hasOwnProperty(keyCode))
-			.map(keyCode => keyboardMap[keyCode]);
-
-		if (symbolKeys.length) {
-			$(container).text(symbolKeys.slice(0, 2).join(" + "));
-		} else {
-			$(container).text("empty");
-		}
-	});
-}
 
 const activeImageSrc = "resources/assets/icons/folder-white.svg";
 const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
@@ -114,10 +90,14 @@ const foldersList = $(".main-content .folders");
 
     // Main
 function initializeMain() {
+
+
+ 
   //const container = $(".main-content .contents");
 
 	// Initialize scrollbar
 	new PerfectScrollbar("#list-scrollbar", { wheelPropagation: false });
+  new PerfectScrollbar("#folder-list", { wheelPropagation: false });
 
 
     //finish load asks for the folders 
@@ -134,7 +114,7 @@ function initializeMain() {
     $('#kleeptoggle').click(function(){
         if($(this).is(":checked")){
             toggleclip="Checked";
-            console.log("TOGGLE")
+           
         }
         else if($(this).is(":not(:checked)")){
             toggleclip="Not checked";
@@ -144,36 +124,27 @@ function initializeMain() {
     });
 
     $('#btnToday').click(function(){
-      console.log()
+
+      let options  = {
+        buttons: ["Yes","No","Cancel"],
+        message: "update-available"
+         }
+         let response = dialog.showMessageBox(options);
+
+     
+      //ipc.send("setDisconnect","");
       
+
      $("#datepicker-trigger").datepicker("setDate", new Date());
-     $("#pickMonth").text(moment.format("MMMM"))
-      $("#pickDay").text(moment.format("Do"))
-      $("#pickYear").text(moment.format("YYYY"))
-      //console.log("TTTTTTTTT")
+     //$("#pickMonth").text(moment.format("MMMM"))
+     // $("#pickDay").text(moment.format("Do"))
+     // $("#pickYear").text(moment.format("YYYY"))
+
+     
+      
     })
     
   
-
-	// Folder click listener
-	const activeImageSrc = "resources/assets/icons/folder-white.svg";
-	const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
-	$(".folders .list .item .title").click(function() {
-		// Set all to inactive
-		$(".folders .list .item")
-			.removeClass("active")
-			.find("img")
-			.attr("src", inactiveImageSrc);
-
-		// Set clicked to active
-		$(this)
-			.parents(".item")
-			.addClass("active")
-			.find("img")
-            .attr("src", activeImageSrc);
-            
-        
-	});
 
    
 
@@ -181,10 +152,16 @@ function initializeMain() {
 	
 
     // Initialize folder content on first load of page
+    $(".folder-Main").attr("class","item active"); 
+    
+    
+    getTable();
+    //generateImages();
+    //ipc.send("getImages","x");
     
     generateData();
     generateFolders();
-    $(".folder-Main").attr("class","item active");
+   
 	// Initialize dropdown menu for Bulk Actions
 	initializeMetisMenu("#folder-bulk-actions");
 	initializeMetisMenu("#content-bulk-actions");
@@ -198,8 +175,6 @@ function initializeMain() {
             copyItem= $(this).parent().parent();
             imageKey=copyItem.find(".title").attr("id");
             var imgCopy;
-            console.log(imageKey)
-            console.log(images);
             for(let i in images)
             {
                 
@@ -218,8 +193,6 @@ function initializeMain() {
             copyItem= $(this).parent().parent();
            copytext= copyItem.find(".details .CircularCheckbox .query-name").text();
            var fullclip=shortenedClips[copytext];
-            console.log("copied");
-            console.log(copytext);
             clipboard.writeText(fullclip)
         }
        
@@ -240,50 +213,21 @@ function initializeMain() {
 
     $(document).on("click", ".btn-remove", function() {
         // Log data
-        console.log("remove");
         toBeDeleted= $(this).parent().parent();
-        console.log(toBeDeleted);
-        //console.log(toBeDeleted.find(".details .CircularCheckbox .query-name").text());
-        
-	});
 
+        
+  });
+
+  $(document).on("click", ".btn-folder", function() {
+    // Log data
+   
+    toBeDeletedFolder= $(this).parent();
+    console.log(toBeDeletedFolder)
     
-    /*
-	// Event listener for Delete button
-	$(document).on("click", ".btn-delete", function() {
-        // Log data
-        console.log(toBeDeleted);
-       
-        if(fnameglobal=="Images")
-        {
-            imageRemoved=toBeDeleted.find(".title").attr("id");
-        
-            ipc.send("deleteImage",imageRemoved);
-            console.log(imageRemoved);
-        }
-        else
-        {
-            clipRemoved=toBeDeleted.find(".details .CircularCheckbox .query-name").text();
-        args=[fnameglobal,clipRemoved,isGroup];
-        ipc.send("deleteClip",args);
-        //toBeDeleted.remove();
-        $.modal.close();
-        }
-        
-        // Get snackbar element
-		const snackbar = $("#snackbar");
-        snackbar.text("Removed");
+});
+  
 
-		// Add show class
-		snackbar.addClass("show");
-
-		// Hide the snackbar element by removing the show class after 3000ms (3 seconds)
-		setTimeout(function() {
-			snackbar.removeClass("show");
-		}, 3000);
-		console.log("removed");
-    });
-    */
+   
 
     $("#bulk-copy").click(function(){
         elements = $(".contents .list > .item").has('.CircularCheckbox [type="checkbox"]:checked');
@@ -295,17 +239,17 @@ function initializeMain() {
                 else
                 {
                     var clip=elements.find(".details .CircularCheckbox .query-name")
-                    //console.log(clip);
+                  
                     var finalclip="";
                     
                     clip.reverse().each(function(){
-                         //console.log($(this).text());
+                       
                          var fullclip=shortenedClips[$(this).text()];
                         finalclip=finalclip+"\n"+fullclip
                         
 
                     })   
-                console.log(finalclip);
+               
                 clipboard.writeText(finalclip);
 
                 // Get snackbar element
@@ -330,12 +274,10 @@ function initializeMain() {
 	$(".btn-create").click(function() {
         // Log data
 
-        console.log($("#folderNameInput").val());
         var newFolder=$("#folderNameInput").val();
         // Get cloneable row
         const item = $(".folderclone .cloneable");
-        console.log("clonable:")
-        //console.log(item)
+      
         const foldersList = $(".main-content .folders");
         
 			// Filter: Include content if there is supplied query text
@@ -355,7 +297,7 @@ function initializeMain() {
             newItem.find(".CircularCheckbox input").attr("id", checkboxId);
             newItem.find(".CircularCheckbox label").attr("for", checkboxId);
             ipc.send("filecreate",newFolder,"no",""); 
-            console.log("SEND FILE CREATE")
+       
 			// Append / Add the item in list
 			foldersList.find(".list").append(newItem);
 
@@ -365,10 +307,7 @@ function initializeMain() {
          
     
 
-    console.log(clipboard.availableFormats());
 
-    console.log("create folder");
-    
 
     $("#folderNameInput").val('')
 
@@ -396,7 +335,7 @@ function initializeMain() {
       const year = e.date.getFullYear();
       const monthnum = e.date.getMonth();
       const date=new Date(year,monthnum,day,23,59,59,0)
-      console.log(date.valueOf());
+     
       timeglobal=date.valueOf();
       getTable();
 			// Set date
@@ -436,29 +375,108 @@ function initializeMain() {
 ///////////////////////UI///////////////////////
 ////////////////////////////////////////////////
 
+/*
+$(document).on("hover","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
+  var fullclip=shortenedClips[$(this).text()];
+  var annot;
+  
+  if (fullclip in annotations)
+  {
+    
+     annot = annotations[fullclip];
+    
+  }
+  else
+  {
+    annot = "";
+   
+  }
 
 
+},
+function(){});
+*/
+
+
+
+
+/*
+$(document).on("dblclick","#list-scrollbar .item .title .image", function(){
+  
+
+  copyItem= $(this).parent();
+  imageKey=copyItem.attr("id");
+  console.log(imageKey)
+  var imgCopy;
+  for(let i in images)
+  {
+      
+      if(images[i].key==imageKey)
+      {
+          imgCopy=images[i].originalImage;
+          //var newImage= nativeImage.createFromDataURL(imgCopy);
+          //clipboard.writeImage(newImage);
+          $('#modal-image .image').attr("src", imgCopy)
+          //$('#modal-fullclip .actions #annotation').val("annot")
+          $('#modal-image').modal()
+      }
+  }
+
+
+ 
+    //img
+
+});
+
+*/
 
 $(document).on("dblclick","#list-scrollbar .item .details .CircularCheckbox .query-name", function(){
   var fullclip=shortenedClips[$(this).text()];
+  var annot;
+ 
+  if (fullclip in annotations)
+  {
+     annot = annotations[fullclip];
+  }
+  else
+  {
+    annot = "";
+  }
+  
   if(isValidUrl(fullclip))
   {
-    console.log(fullclip);
+   
     electron.shell.openExternal(fullclip);
     
   }
+  else
+  {
+   
+    $('#modal-fullclip .message').text(fullclip)
+    $('#modal-fullclip .actions #annotation').val(annot)
+    $('#modal-fullclip').modal()
+  }
+})
+
+$(".btn-annotate").click(function(){
+  var text= $('#modal-fullclip .message').text()
+  var ant =$('#modal-fullclip #annotation').val()
+  ipc.send("annotate", fnameglobal, text, ant);
+ 
+  $('#modal-fullclip .message').val('')
+  $('#modal-fullclip #annotation').val('')
 })
 
 
 // Add dynamic items in Folder Contents in main.html
 const generateData = function(query = "") {
     // Initial date number
+    canUpdateDate=false;
     const startDate = 10;
 
     // Get cloneable row
     const item = $(".Main .cloneable");
-    console.log("clonable:")
-    console.log(item)
+   
 
     // Remove items in Folder Contents list
     container.find("#list-scrollbar").empty();
@@ -482,7 +500,7 @@ const generateData = function(query = "") {
         if(color=="color-yellow"||color=="color-red"||color=="color-blue"||color=="color-red"||color=="color-green")
         {
             newItem.removeClass().addClass("item " + color);
-            console.log(color);
+            
         }
         
 
@@ -533,7 +551,7 @@ const generateFolders = function(query = "") {
     const item = $(".folderclone .cloneable");
     
     var currActive=foldersList.find(".item active").attr("id");
-    console.log(currActive);
+    
     
 
     
@@ -542,11 +560,7 @@ const generateFolders = function(query = "") {
 
     // If query is supplied, filter the list
     fdata.forEach(({ name }, index) => {
-        // Filter: Include content if there is supplied query text
-        // and supplied text is substring of content description
-        if (query.length > 0 && !description.includes(query)) {
-            return;
-        }
+        
 
         // Generate id for dropdown and checkbox
         const checkboxId = 'folder-id-'+name;
@@ -561,7 +575,7 @@ const generateFolders = function(query = "") {
         if(name=="Main"&& init==0)
         {
             newItem.attr("class","item active");
-         console.log("MAIN PLEASE")
+         
          init=1;
         }
 
@@ -571,8 +585,8 @@ const generateFolders = function(query = "") {
         }
 
         newItem.find(".title").html('<img src="resources/assets/icons/folder-gray.svg" width="25" height="25">'+name)
-        newItem.find(".CircularCheckbox input").attr("id", checkboxId);
-        newItem.find(".CircularCheckbox label").attr("for", checkboxId);
+        //newItem.find(".CircularCheckbox input").attr("id", checkboxId);
+        //newItem.find(".CircularCheckbox label").attr("for", checkboxId);
         // Append / Add the item in list
         foldersList.find(".list").append(newItem);
         
@@ -583,58 +597,74 @@ const generateFolders = function(query = "") {
     
 };
 
+var lock=0;
+var count=0;
 // Add dynamic items in Folder Contents in main.html
 const generateImages = function(query = "") {
 
-  
-    // Initial date number
-    const startDate = 10;
+    
+   
+      
+      
+      // Initial date number
+      const startDate = 10;
 
-    // Get cloneable row
-    const item = $(".imageclone .cloneable");
-    console.log("clonable:")
-    console.log(item)
+      // Get cloneable row
+      const item = $(".imageclone .cloneable");
+    
 
-    // Remove items in Folder Contents list
-    container.find(".list").empty();
+      
 
-    // If query is supplied, filter the list
-    images.forEach(({ day, month,image,key }, index) => {
-        // Filter: Include content if there is supplied query text
-        // and supplied text is substring of content description
-        if (query.length > 0 && !description.includes(query)) {
-            return;
-        }
 
-        // Generate id for dropdown and checkbox
-        const dropdownId = `more-actions-${key}`;
-        const checkboxId = `checkbox-${key}`;
+      var finishloop = new Promise((resolve, reject) => {
+        // Remove items in Folder Contents list
+       
+        container.find("#list-scrollbar").empty();
+        // If query is supplied, filter the list
+        images.forEach(({ day, month,image,key, fulldate }, index) => {
+            // Filter: Include content if there is supplied query text
+            // and supplied text is substring of content description
+            if (query.length > 0 && !description.includes(query)) {
+                return;
+            }
+           
+            // Generate id for dropdown and checkbox
+            const dropdownId = `more-actions-${key}`;
+            const checkboxId = `checkbox-${key}`;
 
-        // Clone the cloneable row
-        const newItem = item.clone();
+            // Clone the cloneable row
+            const newItem = item.clone();
 
-        // Remove cloneable class to so item will be shown
-        newItem.removeClass("cloneable");
+            // Remove cloneable class to so item will be shown
+            newItem.removeClass("cloneable");
 
-        // Update date data
-        newItem.find(".date .day").text(month);
-        newItem.find(".date .day-number").text(day);
-        newItem.find(".title .image").attr("src",image);
-        newItem.find(".title").attr("id",key);
-        // Update name / description data
-        //newItem.find(".details .query-name").text(description);
+            // Update date data
+            newItem.find(".date .day").text(month);
+            newItem.find(".date .day-number").text(day);
+            newItem.find(".title .image").attr("src",image);
+            newItem.find(".title").attr("id",key);
+            // Update name / description data
+            //newItem.find(".details .query-name").text(description);
 
-        // Change dropdown id
-       // newItem.find(".dropdown-menu").attr("id", dropdownId);
-        newItem.find(".CircularCheckbox input").attr("id", checkboxId);
-        newItem.find(".CircularCheckbox label").attr("for", checkboxId);
+            // Change dropdown id
+          // newItem.find(".dropdown-menu").attr("id", dropdownId);
+            newItem.find(".CircularCheckbox input").attr("id", checkboxId);
+            newItem.find(".CircularCheckbox label").attr("for", checkboxId);
 
-        // Append / Add the item in list
-        container.find(".list").append(newItem);
+            // Append / Add the item in list
+            if(fulldate < timeglobal)
+            {
+                container.find(".list").append(newItem);
+            }
+           
+            if (index === images.length -1) resolve();
+            // Initialize the dropdown menu (important)
+          // initializeMetisMenu(`#${dropdownId}`);
+        });
+      });
 
-        // Initialize the dropdown menu (important)
-       // initializeMetisMenu(`#${dropdownId}`);
-    });
+     
+    
 };
 
 function moveModal(){
@@ -652,18 +682,18 @@ function moveModal(){
             $("#copyselect").append(option);
             }
         }
-        console.log(fdata)
+        
     });
     
     // Event for apply
 	modal.find(".btn-move").click(function() {
         const selectedValue = modal.find(".selected").attr("value");
         var folderMove =$("#copyselect").children("option:selected").text();
-        console.log(folderMove);
+        
         
 		if (folderMove!=fnameglobal) {
             const type = modal.attr("type");
-            console.log(type)
+           
 			let elements;
 
 			if (type === "move-content-single") {
@@ -675,14 +705,14 @@ function moveModal(){
 				);
 			} 
             
-            //console.log(elements[i]);
+           
             var clip=elements.find(".details .CircularCheckbox .query-name")
-            //console.log(clip);
             
-            console.log(clip);
+            
+           
             //elements.removeClass().addClass("item " + selectedColor);
             clip.each(function(){
-                 //console.log($(this).text());
+                
                  var fullclip=shortenedClips[$(this).text()];
                   args=[folderMove,fullclip,"white","create",isGroup];
                 ipc.send("newclip",args); 
@@ -727,22 +757,22 @@ function deleteModal() {
 		
 			const type = modal.attr("type");
 			let elements;
-            console.log(type)
+            
             if (type === "delete-button")
              {
-                console.log(toBeDeleted);
+                
             
                 if(fnameglobal=="Images")
                 {
                     imageRemoved=toBeDeleted.find(".title").attr("id");
                 
                     ipc.send("deleteImage",imageRemoved);
-                    console.log(imageRemoved);
+                   
                 }
                 else
                 {
                     clipRemoved=toBeDeleted.find(".details .CircularCheckbox .query-name").text();
-                    console.log("REMOVEEEEEEEEEEEEEEEEED " +shortenedClips[clipRemoved])
+                   
                 args=[fnameglobal,shortenedClips[clipRemoved],isGroup];
                 ipc.send("deleteClip",args);
                 
@@ -760,7 +790,7 @@ function deleteModal() {
                     //imageRemoved=toBeDeleted.find(".title").attr("id");
                     imagesTBD.each(function(){
                         ipc.send("deleteImage",$(this).attr("id"));
-                        console.log($(this).attr("id"));
+                      
                    })   
 
                     
@@ -768,11 +798,9 @@ function deleteModal() {
                 else
                 {
                     var clip=elements.find(".details .CircularCheckbox .query-name")
-                    //console.log(clip);
-                    
-                    console.log(clip);
+                  
                     clip.each(function(){
-                         //console.log($(this).text());
+                       
                           args=[fnameglobal,shortenedClips[$(this).text()],isGroup];
                         ipc.send("deleteClip",args); 
                     })   
@@ -790,7 +818,7 @@ function deleteModal() {
                     //imageRemoved=toBeDeleted.find(".title").attr("id");
                     imagesTBD.each(function(){
                         ipc.send("deleteImage",$(this).attr("id"));
-                        console.log($(this).attr("id"));
+                       
                    })   
 
                     
@@ -798,11 +826,9 @@ function deleteModal() {
                 else
                 {
                     var clip=elements.find(".details .CircularCheckbox .query-name")
-                    //console.log(clip);
-                    
-                    console.log(clip);
+                  
                     clip.each(function(){
-                         //console.log($(this).text());
+                      
                           args=[fnameglobal,shortenedClips[$(this).text()],isGroup];
                         ipc.send("deleteClip",args); 
                     })   
@@ -812,18 +838,15 @@ function deleteModal() {
 
             }
 
-            else if (type === "folder-bulk") 
+            
+            else if (type === "delete-folder") 
             {
         
-              elements = $(".folders .list > .item").has(
-                '.CircularCheckbox [type="checkbox"]:checked'
-              );
+                console.log(toBeDeletedFolder.find(".title"))
+                var folderName = toBeDeletedFolder.find(".title").text()
+             
               
-              var folderNames = elements.find(".title")
-              folderNames.each(function(){
-                var name =$(this).text();
-                console.log(name)
-                if(name=="Main")
+                if(folderName=="Main")
                 {
                   snackbar.text("Can't remove Main");
 
@@ -836,7 +859,7 @@ function deleteModal() {
                   }, 3000);
                 }
 
-                else if(name=="Images")
+                else if(folderName=="Images")
                 {
 
                   snackbar.text("Can't remove Images");
@@ -851,18 +874,18 @@ function deleteModal() {
                 }
                 else
                 {
-                    if(fnameglobal==name)
+                    if(fnameglobal==folderName)
                     {
                       $("#folder-Main").attr("class","item active");
-                      console.log($("#folder-Main"));
+                     
                       fnameglobal="Main";
                       getTable();
                       
                     }
-
-                    ipc.send("deleteFolder",name);
+                    console.log(folderName)
+                    ipc.send("deleteFolder",folderName);
                 }
-              })
+             
              
             }
             
@@ -881,7 +904,7 @@ function deleteModal() {
            }, 3000);
 
            */
-           console.log("removed");
+           
 			$.modal.close();
 		
 	});
@@ -918,7 +941,7 @@ function colorsSelectionModal() {
         
 		if (selectedColor.length) {
             const type = modal.attr("type");
-            console.log(type)
+         
 			let elements;
 
 			if (type === "folder-content") {
@@ -935,14 +958,14 @@ function colorsSelectionModal() {
         
       }
             
-            //console.log(elements[i]);
-            var clip=elements.find(".details .CircularCheckbox .query-name")
-            //console.log(clip);
             
-            console.log(clip);
+            var clip=elements.find(".details .CircularCheckbox .query-name")
+           
+            
+          
             elements.removeClass().addClass("item " + selectedColor);
             clip.each(function(){
-                 //console.log($(this).text());
+               
                  var fullclip=shortenedClips[$(this).text()];
                   args=[fnameglobal,fullclip,selectedColor,"colorChange",isGroup];
                 ipc.send("newclip",args); 
@@ -962,19 +985,18 @@ const activeImageSrc = "resources/assets/icons/folder-white.svg";
 const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
 $(".folders .list .item .title").click(function() {
 // Set all to inactive
-$(".folders .list .item")
-    .removeClass("active")
-    .find("img")
-    .attr("src", inactiveImageSrc);
+$(".folders .list .item").removeClass("active")
+
+$(".folders .list .item .title").find("img").attr("src", inactiveImageSrc);
 
 // Set clicked to active
 $(this)
     .parents(".item")
     .addClass("active")
-    .find("img")
+    .find(".title img")
     .attr("src", activeImageSrc);
     fnameglobal=$(this).text();
-    console.log($(this).text());
+    
     getTable();
 
     if($(this).text()=="Images")
@@ -1003,49 +1025,122 @@ $(this)
 
 function getTable()
 {
+
+  canUpdateDate=false;
   
-  console.log("Getting the table for the following folder: " +fnameglobal)
-  //let filename = document.getElementById("fname").textContent;
-  //filename = document.getElementById("fname").textContent;
-  if(fnameglobal=="Images"){
-    $("#list-scrollbar").addClass("images");
-    console.log("sending getImages");
-      ipc.send("getImages","x");
-  }
-  else
+  
+  if(connected)
   {
-    $("#list-scrollbar").removeClass("images");
-    ipc.send('gettable',fnameglobal,timeglobal,isGroup);
-  console.log("sending gettable for "+fnameglobal+ timeglobal+ isGroup);
+    
+    console.log(images.length)
+    if(images.length==0)
+    {
+
+      ipc.send("getImages","x");
+    }
+
+   
+    //let filename = document.getElementById("fname").textContent;
+    //filename = document.getElementById("fname").textContent;
+    if(fnameglobal=="Images"){
+      console.log("aaaaaaaaaaaaa")
+      
+      $("#list-scrollbar").empty().addClass("images");
+      $("#list-scrollbar").append("<div class='loader'></div>") 
+      //console.log(images.length)
+      if(images.length==0)
+      {
+
+        ipc.send("getImages","x");
+      }
+      else{
+        generateImages()
+        ipc.send("getImages","x");
+      }
+        
+    }
+    else
+    {
+      $("#list-scrollbar").removeClass("images");
+      ipc.send('gettable',fnameglobal,timeglobal,isGroup);
+   
+    }
   }
  
 }
 
 
+
+//var connected =false;
+const config = {
+  timeout: 5000, //timeout connecting to each server, each try
+  retries: 5,//number of retries to do before failing
+  domain: 'https://apple.com',//the domain to check DNS record of
+}
+
+setInterval(function(){
+
+  checkInternetConnected()
+  .then((result) => {
+    
+    connected=true;//successfully connected to a server
+  })
+  .catch((ex) => {
+    connected=false; // cannot connect to a server or error occurred.
+  });
+},1000);
+
+
+setInterval(function(){
+
+  if (canUpdateDate==true)
+  {
+  $('#btnToday').trigger("click");
+  
+  }
+  canUpdateDate=true;
+  
+},36000000)
+
 //constantly send a new clipboard to check if it is in the db
 setInterval(function(){
+
+
   
+    //console.log(connected)
     var clip = clipboard.readImage();
-    if(clip.isEmpty())
-    {
-      clip =clipboard.readText();
-      if(toggleclip=="Checked")
-      {
-      //let filename = document.getElementById("fname").textContent;
-      //console.log("SENDING NEW CLIP AND THIS FILE:",fnameglobal)
-      
+   
     
+    if(Object.values(clipboard.availableFormats()).includes("text/rtf"))
+    {
+      //console.log(clipboard.readRTF());
+    }
+
+
+   
+    if(Object.values(clipboard.availableFormats()).includes("text/plain"))
+    {
       
       
-      //if (document.getElementById("temp").textContent!==clip)
+      clip =clipboard.readText();
+      
+      if(toggleclip=="Checked" && connected)
+      {
+      
+     
+      
+      
+      
+      
+      
       if(lastclip!==clip&& clip.length>0)
       {
-        console.log("Found a new clip that is different from last clip: "+ lastclip);
+        //console.log("Found a new clip that is different from last clip: "+ lastclip);
         if(fnameglobal!=="Images")
         {
           args=[fnameglobal,clip,"white","create", isGroup];
           ipc.send('newclip',args);
-          console.log("sending newclip");
+         // console.log("sending newclip");
         }
         if(userSettings['sound']=="Yes")
         {
@@ -1056,24 +1151,24 @@ setInterval(function(){
           args=["Main",clip,"white","create", isGroup];
           
           ipc.send('newclip',args);
-          console.log("sending newclip to main");
+          //console.log("sending newclip to main");
         }
   
         let d = new Date()
         localStorage.setItem(d.getTime().toString(),clip);
-        //console.log("LOCAL STORAGE");
-        //console.log(Object.keys(localStorage));
+      
         localStorage.clear()
         
        
       }
-      lastclip=clip;
+      
       
     }
+    lastclip=clip;
     }
     else{
   
-      if(toggleclip=="Checked" )
+      if(toggleclip=="Checked" && connected )
       {
         if(typeof lastclipImage !== 'undefined')
         {
@@ -1081,28 +1176,30 @@ setInterval(function(){
         
           if(lastclipImage.toDataURL()!==clip.toDataURL())
           {
-            console.log("Found new clip that is an image");
+            //console.log("Found new clip that is an image");
+          
+            var dimensions = sizeOf(clip.toPNG());
+            console.log(dimensions)
             ipc.send("picture",'1');
-            console.log("Sending picture");
-            //console.log(clip);
-          // console.log(clip.length);
-            //$('#imagesList').append('<li><img src="' + clip + '" /></li>'); 
+          
+       
+           
             lastclipImage=clip;
-            //console.log(lastclipImage);
+          
           
           }
         }
   
         else{
             
-          console.log("Clipboard is FIRST image!");
+          //console.log("Clipboard is FIRST image!");
+         
           ipc.send("picture",'1');
-          console.log("Sending picture");
-          //console.log(clip);
-        // console.log(clip.length);
+          //console.log("Sending picture");
+       
           //$('#imagesList').append('<li><img src="' + clip + '" /></li>'); 
           lastclipImage=clip;
-          //console.log(lastclipImage);
+        
         }
       }
     }
@@ -1119,7 +1216,8 @@ var now = null;
 
 
 now = moment().format("H:mm:ss");
-console.log(now)
+
+
     if (now === midnight) {
       $('#btnToday').trigger("click");
     }
@@ -1137,7 +1235,7 @@ console.log(now)
     var year = (d .getFullYear());
     var hour = (d.getHours());
     var minutes = (d.getMinutes());
-    monthsArr=["January","February","March","April","May","June","July","August","September","October","November","December"]
+    monthsArr=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
     if(format=="MM/DD/YYYY")
     {
       //return month + "/" + day + "/" + year+ "\n" + hour + ":" +minutes;
@@ -1188,12 +1286,29 @@ function resizedataURL(datas, wantedWidth, wantedHeight){
 
 
   function getImageDimensions(file) {
+    
+
+
     return new Promise (function (resolved, rejected) {
+     
+
+     
+
+      
+      
       var i = new Image()
       i.onload = function(){
+        
         resolved({w: i.width, h: i.height})
       };
-      i.src = file
+      i.onerror = function(){
+       
+        resolved({w: 0, h: 0})
+      }
+       i.src = file
+
+      
+     
     })
   }
   
@@ -1205,7 +1320,14 @@ function resizedataURL(datas, wantedWidth, wantedHeight){
       return false;  
     }
   
+    if (string.includes("http") || string.includes("ftp"))
+    {
     return true;
+    }
+
+    else{
+      return false;
+    }
   }
 
 
@@ -1236,28 +1358,36 @@ ipc.on("table",function(event,arg){
    
     
     var entries = Object.values(arg);
-    //console.log(arg);
-    //console.log(entries);
+   
+
     //start from bottom
-   console.log(entries);
+
    data=[];
     for(var i=entries.length-1;i>-1;i--)
     {
         var d = new Date(entries[i].timestamp);
         fdate=GetFormattedDate(d,userSettings['dateFormat']);
-    data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color});
+        if('annotation' in entries[i])
+        {
+          data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color,"annotation":entries[i].annotation});
+          annotations[entries[i].kleep]=entries[i].annotation;
+        }
+        else
+        {
+          data.push({"day":fdate[0],"month":fdate[1],"description":entries[i].kleep,"color":entries[i].color});
+        }
    
               
     }
-  
-    console.log(data)
-    generateData()
+    
+    
+    generateData();
   });
 
 //Gets the files
 ipc.on("newfile",function(event,arg){
     var fnames=Object.keys(arg);
-    //console.log(Object.keys(arg));
+    
   
    fdata=[];
     for(var i=0;i<fnames.length;i++)
@@ -1266,8 +1396,7 @@ ipc.on("newfile",function(event,arg){
    
   
     }
-    console.log("FDATA");
-    console.log(fdata);
+
     generateFolders();
    
   });
@@ -1278,8 +1407,7 @@ ipc.on("newfile",function(event,arg){
   ipc.on("returnSettings",function(event,arg){
     getTable();
     userSettings=arg;
-    console.log("userSETTINGS");
-    console.log(userSettings);
+   
   
     //LANGUAGE STUFF, NOT USED RIGHT NOW
     /*
@@ -1314,92 +1442,119 @@ ipc.on("newfile",function(event,arg){
   })
 
 
-  ///At the moment dont seem to need it
-  /*
-  ipc.on("newfile",function(event,arg){
-    var fnames=Object.keys(arg);
-    //console.log(Object.keys(arg));
-  
-    const slct = document.getElementById('fileslct');
-            slct.innerHTML='';
-            slct.className='';
-            //slct.className= 'collection';
-    for(var i=0;i<fnames.length;i++)
-    {
-      
-   const opt = document.createElement('option');
-              //opt.className ='collection-item';
-              const itemText= document.createTextNode(fnames[i]);
-              opt.appendChild(itemText);
-              slct.appendChild(opt); 
-  
-  
-    }
-  });
-*/
-
 
 //get the images  
-//NEEDS WORK
+
 ipc.on("recieveImages",function(event,arg){
 
+    
+    
     processArray(arg);
-    async function processArray(arg){
-    imagesArr={};
-    imagesOriginalSize={};
-    images=[]
-    console.log("I HAVE RECEIVED THE IMAGES FROM FIREBASE");
-    //console.log(arg);
-      console.log(arg);
-    
-      var sortedArg = arg.sort(function(a, b) {
-        return b[2] - a[2];
-      });
-  
-    
-    //start from bottom
-   
-    for(const item of sortedArg)
+    async function processArray(arg)
     {
-     
-  
-      //console.log(typeof arg);
-      var newDataURI= item[0];
-      var dimensions = await getImageDimensions(newDataURI);
+      imagesArr={};
+      imagesOriginalSize={};
+      images=[]
+
       
-      var ratio = dimensions.w/200;
-      //console.log(ratio);
-      var newHeight= dimensions.h/ratio;
-      var newImage = await resizedataURL(newDataURI, 200, newHeight);
-     
-     
-     var d = new Date(item[2]);
-      var fdate=GetFormattedDate(d,userSettings['dateFormat']);
+        var sortedArg = arg.sort(function(a, b) {
+          return b[2] - a[2];
+        });
     
-      images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
-     imagesArr[item[2]]=item[1];
-      imagesOriginalSize[d]=item[0];
+      
+      //start from bottom
     
+
+    
+      for(const item of sortedArg)
+      {
+      
+        
+      
+        var newDataURI= item[0];
+
+        if(item[4]==0)
+        {
+        
+          var dimensions = await getImageDimensions(newDataURI);
+          //ipc.send("storeImageDimensions",dimensions.w, dimensions.h, item[1]);
+        }
+        else{
+        
+          var dimensions = {w: item[3], h: item[4]} 
+        }
+        
+      
+        if(dimensions.w!=0 && newDataURI.length>100)
+        {
+        
+            var ratio = dimensions.w/200;
+          
+            var newHeight= dimensions.h/ratio;
+            var newImage = await resizedataURL(newDataURI, 200, newHeight);
+          
+          
+            var d = new Date(item[2]);
+            var fdate=GetFormattedDate(d,userSettings['dateFormat']);
+          
+            images.push({"day":fdate[0],"month":fdate[1],"fulldate":item[2],"key":item[1],"image":newImage,"originalImage":item[0]});
+            imagesArr[item[2]]=item[1];
+            imagesOriginalSize[d]=item[0];
+      
+        }
+        
+      }
+      $('.loader').remove()
+      console.log(images)
+      generateImages();
   
-  
+   
     }
-    console.log(images)
-    generateImages();
-  //console.log("ImageArr:");
-    //console.log(imagesArr);
-    //$('#mainTable').html(table_body);
-  }
   })
+
 
   //print ipc
 ipc.on("print",function(event,arg)
 {
-  console.log("PRINT TROUBLESHOOT:");
-  console.log(arg);
+  //console.log("PRINT TROUBLESHOOT:");
+  //console.log(arg);
 });
 
+ipc.on("printerror",function(event,arg)
+{
+  console.log("PRINT ERROR:");
+  console.log(arg);
+});
 
 ipc.on("logout",function(event,arg){
     console.log("LOGGING OUT")
     redirect(page.LOGIN);
 });
+
+
+ipc.on("update-available",function(event,arg){
+  let options  = {
+    buttons: ["Yes","No","Cancel"],
+    message: "update-available"
+     }
+     let response = dialog.showMessageBox(options);
+})
+
+ipc.on("update-available",function(event,arg){
+  let options  = {
+    buttons: ["Yes","No","Cancel"],
+    message: "update-Down"
+     }
+     let response = dialog.showMessageBox(options);
+})
+
+//AKIA5643XVMRBWDJAHRA
+//oN/wIFQRwH/8M1VKn+OcAf5TFsOOV/bje5lgRL9u
+
+
+$("#list-scrollbar .item").mouseover(function(){
+  console.log("aaaaaaaaaaaaaaaaaaaaaaaa")
+}
+)
+
+

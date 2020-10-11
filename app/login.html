@@ -3,6 +3,8 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>Kleep - Login</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+
 
 		<!-- Custom CSS -->
 		<link rel="stylesheet" href="./resources/css/normalize.css" />
@@ -31,14 +33,16 @@
 					<!-- Email -->
 					<input type="email" class="input" id="email" placeholder="Email ID" />
 
-					<!-- Password -->
-					<input
-						type="password"
-						class="input"
-						id="password"
-						placeholder="Password"
-					/>
-
+					<div class=container>
+						<!-- Password -->
+						<input
+							type="password"
+							class="input"
+							id="password"
+							placeholder="Password"
+						/> 
+						<i class="far fa-eye" id="togglePassword"></i>
+					</div>
 					<!-- Submit / Login button -->
 					<button class="btn-submit bg-blue" id="login">Log In</button>
 					
@@ -48,14 +52,14 @@
 					<!-- Keep me Signed In -->
 					<div class="Checkbox">
 						<label>
-							<input type="checkbox" id="keep-me-signed-in" />
+							<input type="checkbox" id="remember-pass" />
 							<span></span>
-							Keep me signed in
+							Remember Password
 						</label>
 					</div>
 
 					<!-- Forgot Password -->
-					<a class="link text-blue" href="javascript:void(0)">
+					<a class="link text-blue" href="javascript:void(0)" id="forgotPassword">
 						Forgot Password?
 					</a>
 				</div>

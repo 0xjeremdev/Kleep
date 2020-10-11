@@ -17,11 +17,12 @@
 		<link
 		rel="stylesheet"
 		href="resources/vendor/perfect-scrollbar/css/perfect-scrollbar.css"
-	/>
-
+		/>
+		<link rel="stylesheet" href="resources/vendor/spin/spin.css" />
 		<!-- Custom CSS -->
 		<link rel="stylesheet" href="resources/css/normalize.css" />
 		<link rel="stylesheet" href="resources/css/dashboard.css" />
+		
 	</head>
 
 	<body>
@@ -85,10 +86,7 @@
 			<div class="item cloneable">
 				<!-- Checkbox -->
 				<div class="CircularCheckbox">
-					<!-- Checkbox `id` and Label `for` must be the same and must be unique from other items -->
-					<input type="checkbox" id="folder-id-7" />
-					<!-- Checkbox `id` and Label `for` must be the same and must be unique from other items -->
-					<label for="folder-id-7"> </label>
+				
 				</div>
 
 				<!-- Folder name -->
@@ -100,6 +98,19 @@
 					/>
 					test add
 				</span>
+
+				<a
+						class="btn-folder"
+						href="#modal-delete-confirmation"
+						rel="modal:open"
+						value="delete-folder"
+					>
+						<img
+							src="resources/assets/icons/trash-gray.svg"
+							height="12"
+							width="12"
+						/>
+					</a>
 			</div>
 
 		</div>
@@ -107,7 +118,7 @@
 			<!-- Header Section -->
 			<div class="header">
 				<!-- Column: Logo -->
-				<div class="logo">
+				<div class="logo" id="logo">
 					<img class="logo" src="resources/assets/images/logo.png" />
 				</div>
 
@@ -173,15 +184,12 @@
 						</a>
 
 						<!-- List of Folders -->
-						<div class="list">
+						<div class="list" id = "folder-list">
 							<!-- Folder Item -->
 							<div class="item">
 								<!-- Checkbox -->
 								<div class="CircularCheckbox">
-									<!-- Checkbox `id` and Label `for` must be the same and must be unique from other items -->
-									<input type="checkbox" id="folder-id-1" />
-									<!-- Checkbox `id` and Label `for` must be the same and must be unique from other items -->
-									<label for="folder-id-1"> </label>
+								
 								</div>
 
 								<!-- Folder name -->
@@ -198,8 +206,7 @@
 							<!-- Folder Item : Active -->
 							<div class="item active">
 								<div class="CircularCheckbox">
-									<input type="checkbox" id="folder-id-2" />
-									<label for="folder-id-2"> </label>
+									
 								</div>
 								<span class="title">
 									<img
@@ -363,6 +370,8 @@
 				</div>
 			</div>
 
+			
+
 			<div id="modal-move-folder" class="modal">
 				<p class="message">Please select a folder name.</p>
 				<div class="actions">
@@ -409,6 +418,29 @@
 					<button class="btn-apply" disabled>Apply</button>
 				</div>
 			</div>
+
+			<div id="modal-fullclip" class="modal">
+				
+				<p class="message">test</p>
+			
+				<div class="actions">
+					<input type="text" placeholder="annotation" id="annotation"/>
+					<a class="btn-annotate" href="#" rel="modal:close">Annotate</a>
+					<!--<button class="btn-create">Create</button>-->
+				</div>
+			</div>
+
+			<div id="modal-image" class="modal">
+				
+				<img class="image"></img>
+			
+				<div class="actions">
+					<input type="text" placeholder="annotation" id="annotation"/>
+					<a class="btn-annotate" href="#" rel="modal:close">Annotate</a>
+					<!--<button class="btn-create">Create</button>-->
+				</div>
+			</div>
+
 
 			<!-- Snackbar -->
 			<div class="Snackbar" id="snackbar"></div>
@@ -531,6 +563,7 @@
 		<script src="resources/vendor/metis-menu/dist/metismenujs.min.js"></script>
 		<script src="resources/vendor/modal/modal.min.js"></script>
 		<script src="resources/vendor/datepicker/datepicker.min.js"></script>
+		<script type="module" src="resources/vendor/spin/spin.js"></script>
 
 		<!-- Custom JS -->
 		<script src="resources/js/mainTemp.js"></script>

@@ -191,6 +191,31 @@ body {
   color: #333333;
   letter-spacing: 1px;
 }
+
+
+
+.Login .form .container .input {
+  width: 90%;
+  padding: 10px;
+  border: 0;
+  border-left: 4px solid #26c296;
+  background-color: #e6e6e6;
+  outline: 0;
+}
+.Login .form .container .input:nth-last-child(2) {
+  margin-top: 15px;
+}
+.Login .form .container .input::placeholder {
+  
+  color: #333333;
+  letter-spacing: 1px;
+}
+
+.Login .form .container .i {
+  margin-left: -30px;
+  cursor: pointer;
+  
+}
 .Login .form .btn-submit {
   font-family: "Proxima Nova";
   font-size: 14px;

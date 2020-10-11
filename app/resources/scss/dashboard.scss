@@ -417,6 +417,29 @@ $yellow: #fcee21;
 	}
 }
 
+#modal-fullclip {
+	.actions {
+		@include flex($align-items: center);
+
+		input {
+			padding: 4px;
+			border-radius: 5px;
+			outline: 0;
+			border: 1px solid $color-gray;
+			flex: 1;
+			@include font($size: 14px);
+		}
+
+		.btn-annotate {
+			@include button($color-blue, white);
+			height: auto;
+			margin-left: 8px;
+			width: 80px;
+			align-self: stretch;
+		}
+	}
+}
+
 #modal-color-selection {
 	padding-top: 30px;
 	.colors {
