@@ -135,7 +135,12 @@ function hotkeysInitialization(container) {
 
 function initializeSettings() {
 
-	ipc.send("getSettings","");
+	
+	
+	languageUser = $("#language-input").text();
+	// dateUser = $("#date-format-input").text();
+	 copyMainUser = $("#copy-main-input").text();
+	 soundUser = $("#copy-sounds-input").is(":checked");
     
     
    
@@ -250,6 +255,7 @@ function initializeSettings() {
 
 // Popup Settings
 function initializePopupSettings() {
+	ipc.send("getSettings","");
 	initializeSettings();
 
 	// Event listener for Upgrade button
