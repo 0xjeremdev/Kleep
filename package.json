@@ -1,7 +1,7 @@
 {
 	"name": "kleep",
 	"productName": "kleep",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"description": "",
 	"repository": {
 		"type": "git",
@@ -17,12 +17,12 @@
 		"test": "npm run lint",
 		"start": "electron .",
 		"pack": "electron-packager .",
-		"dist": "electron-builder build --publish never",
+		"dist": "electron-builder build --publish always",
 		"release": "np",
 		"scss": "sass --watch --no-source-map app/resources/scss:app/resources/css"
 	},
 	"dependencies": {
-		"@chenfengyuan/datepicker": "^1.0.9",
+		"@chenfengyuan/datepicker": "^1.0.10",
 		"check-internet-connected": "^2.0.5",
 		"electron-context-menu": "^0.15.2",
 		"electron-debug": "^3.1.0",
@@ -31,18 +31,19 @@
 		"electron-prompt": "^1.6.0",
 		"electron-store": "^5.2.0",
 		"electron-unhandled": "^3.0.2",
-		"electron-updater": "^4.3.4",
+		"electron-updater": "^4.3.5",
 		"electron-util": "^0.13.1",
-		"firebase": "^7.15.3",
+		"firebase": "^7.23.0",
+		"firebase-tools": "^8.15.1",
 		"image-size": "^0.8.3",
 		"jquery": "^3.5.1",
 		"loading-spinner": "^1.2.1",
-		"moment": "^2.27.0",
+		"moment": "^2.29.1",
 		"perfect-scrollbar": "^1.4.0",
 		"spin.js": "^4.1.0"
 	},
 	"devDependencies": {
-		"electron": "^7.3.2",
+		"electron": "^7.3.3",
 		"electron-builder": "^21.2.0",
 		"np": "^5.2.1",
 		"xo": "^0.25.4"
@@ -62,6 +63,10 @@
 		"win": {
 			"target": "nsis",
 			"icon": "KleepIcon.png"
+		},
+		"mac": {
+			"target": "dmg",
+			"icon": "KleepIconMac.png"
 		},
 		"publish": {
 			"provider": "s3",

@@ -54,12 +54,10 @@ module.exports = {
       },
         initializeTodayBtn: function(){
       $("#btnToday").click(function() {
-          let options = {
-              buttons: ["Yes", "No", "Cancel"],
-              message: "update-available"
-          };
-          let response = dialog.showMessageBox(options);
+          
       
+        const container = document.querySelector('#list-scrollbar');
+        container.scrollTop = 0;
           //ipc.send("setDisconnect","");
       
       
@@ -147,6 +145,7 @@ module.exports = {
         const date = new Date(year, monthnum, day, 23, 59, 59, 0);
 
         timeglobal = date.valueOf();
+        canUpdateDate=false;
         getTable();
         // Set date
         //(this).text(`${month} ${day} ${year}`);

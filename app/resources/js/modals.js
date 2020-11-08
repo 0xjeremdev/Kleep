@@ -153,6 +153,7 @@ module.exports = {
                 $("#folder-Main").attr("class", "item active");
       
                 fnameglobal = "Main";
+                canUpdateDate=false;
                 getTable();
               }
               console.log(folderName);

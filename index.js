@@ -555,6 +555,8 @@ ipc.on("signup", function(event, args) {
 			event.sender.send("signupresult", "success");
 			var dbref = database.ref();
 			dbref.child(firebase.auth().currentUser.uid).set({
+				paid: "Yes",
+				paidUntil: "30-12-9999",
 				email: args[0],
 				language: "English",
 				dateFormat: "American",
@@ -610,9 +612,28 @@ ipc.on("signin", function(event, args) {
 		.auth()
 		.signInWithEmailAndPassword(args[0], args[1])
 		.then(function() {
-			event.sender.send("loginresult", "success");
+			console.log(firebase.auth().currentUser.uid);
+			setTimeout(() => { 
+				var dbref = database.ref();
+				console.log(dbref)
+				dbref.child(firebase.auth().currentUser.uid).once('value').then(function(snapshot) {
+					var paid = snapshot.val().paid;
+					console.log(paid)
+					if(paid=="Yes")
+					{
+						event.sender.send("loginresult", "success");
+					}
+					else
+					{
+						event.sender.send("loginresult", "failure");
+					}
+					checkConnection();
+				  });
+				
+				
+			}, 500);
 
-			checkConnection();
+			
 		})
 		.catch(function(error) {
 			if (error !== null) {
@@ -622,7 +643,7 @@ ipc.on("signin", function(event, args) {
 				event.sender.send("loginresult", "failure");
 			}
 		});
-});
+})
 
 ipc.on("needuser", function(event) {
 	try{
@@ -637,7 +658,7 @@ ipc.on("needuser", function(event) {
 });
 
 //update the user settings
-ipc.on("updateSettings", function(event, lang, date, sound, copy) {
+ipc.on("updateSettings", function(event, lang, date, sound, copy,format) {
 	try{
 		var dbref = database.ref();
 		dbref
@@ -647,13 +668,15 @@ ipc.on("updateSettings", function(event, lang, date, sound, copy) {
 				language: lang,
 				dateFormat: date,
 				sound: sound,
-				copyToMain: copy
+				copyToMain: copy,
+				defaultToImages: format
 			});
 		var settings = {
 			language: lang,
 			dateFormat: date,
 			sound: sound,
-			copyToMain: copy
+			copyToMain: copy,
+			defaultToImages: format
 		};
 		mainWindow.webContents.send("returnSettings", settings);
 	}
@@ -928,7 +951,7 @@ ipc.on("finishload", function(event) {
 var fileref = database.ref();
 
 //the renderer process is asking for the table
-ipc.on("gettable", function(event, fname, timeselected, isgroup) {
+ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
 	//event.sender.send("print", "got this from gettable " + fname + timeselected);
 	try
 	{
@@ -982,7 +1005,15 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup) {
 				orderedlist.push(child.val());
 			});
 
-			event.sender.send("table", orderedlist);
+			if(sync==1)
+			{
+				event.sender.send("tablesync", orderedlist);
+				sync=0;
+			}
+			else
+			{
+				event.sender.send("table", orderedlist);
+			}
 		});
 	}
 	catch(error){
@@ -990,6 +1021,11 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup) {
 	}
 	
 });
+
+
+
+
+
 
 //send the time to renderer process
 //it comes from the select Time window
@@ -1451,6 +1487,7 @@ setInterval(function() {
 	//here we sync
 	if (firebase.auth().currentUser && mainWindow==null)
 	{
+		console.log(firebase.auth().currentUser.uid)
 		fileref.off()
 		var clip = clipboard.readText();
 		console.log("lastclip: "+lastclip)
@@ -1525,4 +1562,4 @@ setInterval(function() {
 		}
 		lastclip=clip;	
 	}
-}, 2000);
+}, 1000);

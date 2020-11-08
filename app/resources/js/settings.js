@@ -114,6 +114,7 @@ var soundUser;
 var languageUser;
 var dateUser;
 var copyMainUser;
+var formatUser;
 
 
 
@@ -141,6 +142,7 @@ function initializeSettings() {
 	// dateUser = $("#date-format-input").text();
 	 copyMainUser = $("#copy-main-input").text();
 	 soundUser = $("#copy-sounds-input").is(":checked");
+	 soundUser = $("#default-format-input").is(":checked");
     
     
    
@@ -152,7 +154,7 @@ function initializeSettings() {
 		// Log information
 		console.log("ready clicked");
 
-        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser);
+        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser,formatUser);
 		// Redirect to Main page
 		redirect(page.MAIN);
 	});
@@ -207,7 +209,22 @@ function initializeSettings() {
         {
             soundUser="No"
         }
-        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser);
+        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser,formatUser);
+        console.log("SENT");
+	});
+
+	$("#default-format-input").change(function() {
+		const formatValue = $(this).is(":checked");
+        console.log("default format", formatValue);
+       if(formatValue==true)
+       {
+        formatUser="Yes"
+       }
+        else
+        {
+            formatUser="No"
+        }
+        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser,formatUser);
         console.log("SENT");
 	});
 
@@ -245,7 +262,7 @@ function initializeSettings() {
 			copyMain[copyMainIndex % copyMain.length]
         );
         copyMainUser=copyMain[copyMainIndex % copyMain.length]
-        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser);
+        ipc.send("updateSettings",languageUser,dateUser,soundUser,copyMainUser, formatUser);
         console.log("SENT")
 	});
 }
@@ -299,12 +316,22 @@ ipc.on("returnSettings",function(event,args){
 	else{
 		$("#copy-sounds-input").prop("checked",false);
 	}
+
+	if(args.defaultToImages=="Yes")
+	{
+		$("#default-format-input").prop("checked",true);
+		
+	}
+	else{
+		$("#default-format-input").prop("checked",false);
+	}
 	
 	
     languageUser = $("#language-input").text();
    // dateUser = $("#date-format-input").text();
     copyMainUser = $("#copy-main-input").text();
-    soundUser = $("#copy-sounds-input").is(":checked");
-
+	soundUser = $("#copy-sounds-input").is(":checked");
+	formatUser =$("#default-format-input").is(":checked");
+	
 
 });

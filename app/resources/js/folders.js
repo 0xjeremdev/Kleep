@@ -6,10 +6,11 @@ module.exports = {
       },
       
         initializeFolderDeleteBtn: function(){
-        $(document).on("click", ".btn-folder", function() {
+        $(document).on("click", ".modal-delete-folder", function() {
             // Log data
-           
-            toBeDeletedFolder= $(this).parent();
+            console.log("YEEEEEES")
+            toBeDeletedFolder= $(this).parent().parent().parent().parent().parent().parent();
+            
             console.log(toBeDeletedFolder)
             
         });
@@ -18,7 +19,7 @@ module.exports = {
         $(".btn-create").click(function() {
             // Log data
       
-            var newFolder = $("#folderNameInput").val();
+            var newFolder = $("#folderNameInput").val().replace(/\s+/g, '');
             // Get cloneable row
             const item = $(".folderclone .cloneable");
       
@@ -49,7 +50,7 @@ module.exports = {
             // Append / Add the item in list
             foldersList.find(".list").append(newItem);
       
-            setFolderListener();
+           module.exports.setFolderListener();
       
             $("#folderNameInput").val("");
         });
@@ -74,8 +75,10 @@ module.exports = {
                 .find(".title img")
                 .attr("src", activeImageSrc);
             fnameglobal = $(this).text();
-      
+            canUpdateDate=false
             getTable();
+            const container = document.querySelector('#list-scrollbar');
+        container.scrollTop = 0;
       
             if ($(this).text() == "Images") {
                 const snackbar = $("#snackbar");

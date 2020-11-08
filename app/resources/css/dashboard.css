@@ -263,7 +263,7 @@ height: auto;
   /* Set a default minimum width */
   margin-left: -75px;
   /* Divide value of min-width by 2 */
-  background-color: #333;
+  background-color: #26c296;
   /* Black background color */
   color: #fff;
   /* White text color */
@@ -682,6 +682,16 @@ height: auto;
   flex-shrink: 0;
   position: relative;
 }
+
+.Main .main-content .folders .wrapper .list .item .action-buttons {
+  display: flex;
+  justify-content: stretch;
+  align-items: stretch;
+  flex-direction: row;
+  margin-left: auto;
+  flex-shrink: 0;
+  position: relative;
+}
 .Main .main-content .contents .list .item .action-buttons .btn-copy {
   border: 0;
   border-radius: 5px;
@@ -706,6 +716,29 @@ height: auto;
   opacity: 0.7;
 }
 .Main .main-content .contents .list .item .action-buttons .btn-more-settings {
+  border: 0;
+  border-radius: 5px;
+  margin-left: 5px;
+  font-family: "Proxima Nova";
+  font-size: 15px;
+  font-weight: 400;
+  padding: 4px 10px;
+  color: #333333;
+  background-color: #4784fa;
+  border-radius: 4px;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  transition: 150ms;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+.Main .main-content .folders .wrapper .list .item .action-buttons .btn-more-settings:hover {
+  transition: 150ms;
+  opacity: 0.7;
+}
+.Main .main-content .folders .wrapper .list .item .action-buttons .btn-more-settings {
   border: 0;
   border-radius: 5px;
   margin-left: 5px;
@@ -780,6 +813,16 @@ height: auto;
   left: 0;
   z-index: 2;
 }
+
+.Main .main-content .folders .wrapper .list .item .action-buttons .dropdown-menu {
+  margin: 0 !important;
+}
+.Main .main-content .folders .wrapper .list .item .action-buttons .dropdown-menu .dropdown-panel {
+  left: 0;
+  z-index: 2;
+}
+
+
 .Main .main-content .contents #content-bulk-actions {
   margin-top: 15px;
 }

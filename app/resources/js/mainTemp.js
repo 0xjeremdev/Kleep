@@ -27,6 +27,7 @@ var connected = true;
 var toBeDeleted;
 var toBeDeletedFolder;
 var canUpdateDate = false;
+var currentDay;
 
 // Usage: For redirecting to different pages
 const page = {
@@ -45,6 +46,7 @@ let syncData= [];
 
 let {remote} = require('electron');
 let path = require('path');
+const { settings } = require("cluster");
 
 let appPath = remote.app.getAppPath();
 const DashboardActions = require(path.resolve(appPath, 'app/resources/js/dashboard.js'));
@@ -69,6 +71,7 @@ function redirect(page) {
  * @param {string} element
  */
 function initializeMetisMenu(element) {
+	
 	const mm = new MetisMenu(element).on("shown.metisMenu", function(event) {
 		window.addEventListener("click", function mmClick(e) {
 			if (!event.target.contains(e.target)) {
@@ -163,7 +166,7 @@ function initializeMain() {
 // Add dynamic items in Folder Contents in main.html
 const generateData = function(query = "") {
 	// Initial date number
-	canUpdateDate = false;
+	console.log("generate")
 	const startDate = 10;
 
 	// Get cloneable row
@@ -232,7 +235,12 @@ const generateData = function(query = "") {
 		container.find(".list").append(newItem);
 
 		// Initialize the dropdown menu (important)
+	
+		
 		initializeMetisMenu(`#${dropdownId}`);
+		
+
+		
 	});
 };
 
@@ -249,8 +257,8 @@ const generateFolders = function(query = "") {
 	
 	fdata.forEach(({ name }, index) => {
 		// Generate id for dropdown and checkbox
-		const checkboxId = "folder-id-" + name;
-
+		
+		const FolderdropdownId = `more-actions-${name}`;
 		// Clone the cloneable row
 		const newItem = item.clone();
 
@@ -275,8 +283,14 @@ const generateFolders = function(query = "") {
 					name
 			);
 		
+		
 		// Append / Add the item in list
 		foldersList.find(".list").append(newItem);
+
+		newItem.find(".dropdown-menu").attr("id", FolderdropdownId);
+		
+		initializeMetisMenu(`#${FolderdropdownId}`);
+		
   });
   
 	FoldersActions.setFolderListener();
@@ -345,11 +359,11 @@ const generateImages = function(query = "") {
 ///FUNC////////////////////
 /////////////////////////////////////////////////////////
 
-function getTable() {
-	canUpdateDate = false;
-
+function getTable(sync = 0) {
+	
+	
 	if (connected) {
-		console.log(images.length);
+		//console.log(images.length);
 		if (images.length == 0) {
 			ipc.send("getImages", "x");
 		}
@@ -372,35 +386,61 @@ function getTable() {
 			}
 		} else {
 			$("#list-scrollbar").removeClass("images");
-			ipc.send("gettable", fnameglobal, timeglobal, isGroup);
+			ipc.send("gettable", fnameglobal, timeglobal, isGroup,sync);
 		}
 	}
 }
 
 setInterval(function() {
+
+	//console.log("SIZE OF SYNCDATA: "+syncData.length)
+	if(syncData.length>1)
 	//here we sync
-	getTable()
-}, 10000);
+	{
+		//console.log("syncing!!!!!!!!!!!!!!!!!!!!")
+		getTable(1);
+	}
+
+	checkInternetConnected().then((result)=>{
+		//console.log("connected");
+	}).catch((ex)=>{
+		//console.log(ex);
+		const snackbar = $("#snackbar");
+      
+		// Get snackbar element
+		snackbar.text("Disconnected");
+
+		// Add show class
+		snackbar.addClass("show");
+
+		// Hide the snackbar element by removing the show class after 3000ms (3 seconds)
+		setTimeout(function() {
+			snackbar.removeClass("show");
+		}, 5000);
+	})
+	
+}, 60000);
 
 
 
 setInterval(function() {
 	if (canUpdateDate == true) {
 		$("#btnToday").trigger("click");
+		
 	}
 	canUpdateDate = true;
-}, 36000000);
+}, 360000);
 
 //constantly send a new clipboard to check if it is in the db
 setInterval(function() {
-	//console.log(connected)
+	//console.log(clipboard.availableFormats())
 	var clip = clipboard.readImage();
 
 	if (Object.values(clipboard.availableFormats()).includes("text/rtf")) {
 		//console.log(clipboard.readRTF());
 	}
 
-	if (Object.values(clipboard.availableFormats()).includes("text/plain")) {
+	if (!Object.values(clipboard.availableFormats()).includes("image/png")||(userSettings["defaultToImages"]=="No" && Object.values(clipboard.availableFormats()).includes("text/plain"))) {
 		clip = clipboard.readText();
 
 		if (toggleclip == "Checked" && connected) {
@@ -450,7 +490,7 @@ setInterval(function() {
 					//console.log("Found new clip that is an image");
 
 					var dimensions = sizeOf(clip.toPNG());
-					console.log(dimensions);
+					//console.log(dimensions);
 					ipc.send("picture", "1");
 
 					lastclipImage = clip;
@@ -493,12 +533,14 @@ function syncToFirebase(syncData, entries)
 {
 	for(var i=0; i< syncData.length; i++)
 	{
+		//console.log("sync found");
+		canUpdateDate = false;
 		var found = false;
 		for (var j=0; j< entries.length;j++)
 		{
 			if(syncData[i].value == entries[j].kleep)
 			{
-				console.log(syncData[i].value + " already synced");
+				//console.log(syncData[i].value + " already synced");
 				found = true
 			}
 
@@ -507,20 +549,26 @@ function syncToFirebase(syncData, entries)
 		if(found)
 		{
 			syncData.splice(i,1)
-			console.log("deleting...")
+			//console.log("deleting...")
 		}
 		else
 		{
-			console.log("need to add "+ syncData[i].value)
+			//console.log("need to add "+ syncData[i].value)
+			var argsSync = [syncData[i].folder, syncData[i].value, syncData[i].color, syncData[i].action, syncData[i].group];
+					ipc.send("newclip", argsSync);
+					
+			//console.log(argsSync)		
 		}
 	}
 
 }
 //get the table from firebase
 ipc.on("table", function(event, arg) {
+	console.log("table")
 	var entries = Object.values(arg);
 
-	console.log(syncData);
+	//console.log("NOT syncing")
+	//console.log(syncData);
 	syncToFirebase(syncData, entries);
 	//console.log(entries);
 	//start from bottom
@@ -551,6 +599,17 @@ ipc.on("table", function(event, arg) {
 	generateData();
 });
 
+
+ipc.on("tablesync", function(event, arg) {
+	var entries = Object.values(arg);
+
+	//console.log("syncing");
+	syncToFirebase(syncData, entries);
+	//console.log(entries);
+	//start from bottom
+
+	
+});
 //Gets the files
 ipc.on("newfile", function(event, arg) {
 	var fnames = Object.keys(arg);
@@ -618,7 +677,7 @@ ipc.on("recieveImages", function(event, arg) {
 			}
 		}
 		$(".loader").remove();
-		console.log(images);
+		//console.log(images);
 		generateImages();
 	}
 });

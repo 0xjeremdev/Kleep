@@ -98,19 +98,62 @@
 					/>
 					test add
 				</span>
+				
+				<div class="action-buttons">
+					
+					<!-- More - Dropdown menu -->
+					<ul class="dropdown-menu">
+						<li>
+							<a class="btn-more-settings" href="javascript:void(0)">
+								<img
+									src="resources/assets/icons/more.svg"
+									height="13"
+									width="13"
+								/>
+							</a>
+							<!-- Menu -->
+							<ul class="dropdown-panel">
+							
+								<li>
+									<a
+										class="modal-button modal-delete-folder"
+										href="#modal-delete-confirmation"
+										rel="modal:open"
+										value="delete-folder"
+									>
+										<img
+											src="resources/assets/icons/trash-gray.svg"
+											width="20"
+											height="20"
+										/>
+										Delete
+									</a>
+								</li>
+								
+		
+								<li>
+									<a
+										class="modal-button"
+										href="#modal-move-folder"
+										rel="modal:open"
+										value="move-content-single"
+									>
+										<img
+											src="resources/assets/icons/folder-gray.svg"
+											width="20"
+											height="20"
+										/>
+										Move to folder
+									</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
 
-				<a
-						class="btn-folder"
-						href="#modal-delete-confirmation"
-						rel="modal:open"
-						value="delete-folder"
-					>
-						<img
-							src="resources/assets/icons/trash-gray.svg"
-							height="12"
-							width="12"
-						/>
-					</a>
+			
+				</div>
+
+				
 			</div>
 
 		</div>
@@ -518,6 +561,20 @@
 											height="20"
 										/>
 										Move to folder
+									</a>
+								</li>
+
+								<li>
+									<a
+										class="modal-button modal-annotation-button"
+										
+									>
+										<img
+											src="resources/assets/icons/folder-gray.svg"
+											width="20"
+											height="20"
+										/>
+										Open Annotation
 									</a>
 								</li>
 							</ul>
