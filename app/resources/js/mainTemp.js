@@ -168,7 +168,7 @@ const generateData = function(query = "") {
 	// Initial date number
 	console.log("generate")
 	const startDate = 10;
-
+	console.log(data)
 	// Get cloneable row
 	const item = $(".Main .cloneable");
 
@@ -176,11 +176,22 @@ const generateData = function(query = "") {
 	container.find("#list-scrollbar").empty();
 
 	// If query is supplied, filter the list
-	data.forEach(({ day, month, description, color }, index) => {
+	data.forEach(({ day, month, description, color,annotation }, index) => {
 		// Filter: Include content if there is supplied query text
 		// and supplied text is substring of content description
 		if (query.length > 0 && !description.toLowerCase().includes(query.toLowerCase())) {
-			return;
+			
+			if(annotation)
+			{
+				if(!annotation.toLowerCase().includes(query.toLowerCase())){
+					return;
+				}
+			}
+			else{
+				return;
+			}
+			
+			
 		}
 
 		// Generate id for dropdown and checkbox
@@ -398,7 +409,7 @@ setInterval(function() {
 	//here we sync
 	{
 		//console.log("syncing!!!!!!!!!!!!!!!!!!!!")
-		getTable(1);
+		//getTable(1);
 	}
 
 	checkInternetConnected().then((result)=>{
@@ -612,7 +623,8 @@ ipc.on("tablesync", function(event, arg) {
 });
 //Gets the files
 ipc.on("newfile", function(event, arg) {
-	var fnames = Object.keys(arg);
+	console.log(arg.folders)
+	var fnames = arg.folders;
 
 	fdata = [];
 	for (var i = 0; i < fnames.length; i++) {
@@ -633,6 +645,7 @@ ipc.on("returnSettings", function(event, arg) {
 //get the images
 
 ipc.on("recieveImages", function(event, arg) {
+	console.log(arg)
 	processArray(arg);
 	async function processArray(arg) {
 		imagesArr = {};

@@ -1,3 +1,9 @@
+const { clipboard } = require("electron");
+var keychain = require('keychain');
+ 
+ 
+
+
 module.exports = {
      initializeCopyBtn: function(){
         // Event listener for Copy button
@@ -55,11 +61,19 @@ module.exports = {
         initializeTodayBtn: function(){
       $("#btnToday").click(function() {
           
-      
+        var x;
+        keychain.getPassword({ account: 'support@kleep.io', service: 'APP_PASSWORD' }, function(err, pass) {
+          console.log('Password is', pass);
+          // Prints: Password is baz
+          x=pass
+        });
+        
+        console.log(x)
         const container = document.querySelector('#list-scrollbar');
         container.scrollTop = 0;
           //ipc.send("setDisconnect","");
-      
+        ipc.send("firestoreStore",clipboard.readText());
+        console.log(clipboard.readText())
       
           $("#datepicker-trigger").datepicker("setDate", new Date());
           //$("#pickMonth").text(moment.format("MMMM"))

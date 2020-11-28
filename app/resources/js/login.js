@@ -107,6 +107,9 @@ $('#forgotPassword').click(function(){
     
 })
 
+$("#googleSignup").click(function(){
+    ipc.send("googleSignup")
+})
 
 
 
