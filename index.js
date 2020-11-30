@@ -59,7 +59,7 @@ app.on("ready", function() {
 			label: "Open",
 
 			click() {
-				clipboard.writeText("yes");
+				
 				createMainWindow();
 			},
 			accelerator: process.platform == "darwin" ? "Command+K" : "Ctrl+X"
@@ -553,49 +553,33 @@ ipc.on("signup", function(event, args) {
 		.createUserWithEmailAndPassword(args[0], args[1])
 		.then(function() {
 			event.sender.send("signupresult", "success");
-			var dbref = database.ref();
-			dbref.child(firebase.auth().currentUser.uid).set({
+			
+			firestore.collection(firebase.auth().currentUser.uid).doc("Profile").set({
 				paid: "Yes",
 				paidUntil: "30-12-9999",
-				email: args[0],
-				language: "English",
-				dateFormat: "American",
-				sound: "Sound On",
-				copyToMain: "Only copy to main when active"
+				email: args[0]
+				
 			});
-			dbref
-				.child(firebase.auth().currentUser.uid)
-				.child("Folders")
-				.set({
-					number: 1
-				});
-			dbref
-				.child(firebase.auth().currentUser.uid)
-				.child("Folders")
-				.child("Main")
-				.set({
-					name: "Main",
-					private: "yes",
-					password: "no"
-				});
-
-			dbref
-				.child(firebase.auth().currentUser.uid)
-				.child("FolderNames")
-				.child("Images")
-				.set({
-					name: "Images"
-				});
-			dbref
-				.child(firebase.auth().currentUser.uid)
-				.child("FolderNames")
-				.child("Main")
-				.set({
-					name: "Main"
-				});
-
+			firestore.collection(firebase.auth().currentUser.uid).doc("Settings").set({
+				defaultToImages: false,
+				language: "English",
+				shortcut: "⌘ + K",
+				sound: "Yes",
+				copyToMain: "Yes",
+				timeFormat: "No"
+			});
+			firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").set({
+				folders:["Main", "Images"]
+			});
+			firestore.collection(firebase.auth().currentUser.uid).doc("Folders").set({
+				count:2
+			});
+			firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Main").add({kleep:"Welcome to Kleep!"});
+			//firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images").add({init:"init"});
 			
+				
 		})
+		/*
 		.catch(function(error) {
 			if (error !== null) {
 				event.sender.send("signupresult", "failure");
@@ -604,6 +588,7 @@ ipc.on("signup", function(event, args) {
 				event.sender.send("signupresult", "failure");
 			}
 		});
+		*/
 });
 
 //signing
@@ -614,10 +599,12 @@ ipc.on("signin", function(event, args) {
 		.then(function() {
 			console.log(firebase.auth().currentUser.uid);
 			setTimeout(() => { 
-				var dbref = database.ref();
-				console.log(dbref)
-				dbref.child(firebase.auth().currentUser.uid).once('value').then(function(snapshot) {
-					var paid = snapshot.val().paid;
+				//var dbref = database.ref();
+				firestore.collection(firebase.auth().currentUser.uid).doc("Profile").get().then(function(doc){
+					console.log(doc)
+					var data = doc.data();
+					console.log(data)
+					var paid = data.paid;
 					console.log(paid)
 					if(paid=="Yes")
 					{
@@ -627,8 +614,9 @@ ipc.on("signin", function(event, args) {
 					{
 						event.sender.send("loginresult", "failure");
 					}
-					checkConnection();
-				  });
+				})
+				
+				
 				
 				
 			}, 500);
@@ -643,6 +631,18 @@ ipc.on("signin", function(event, args) {
 				event.sender.send("loginresult", "failure");
 			}
 		});
+})
+
+ipc.on("googleSignup",function(event){
+	var provider = new firebase.auth.GoogleAuthProvider();
+	provider.addScope('profile');
+	provider.addScope('email');
+	firebase.auth().signInWithPopup(provider).then(function(result) {
+	// This gives you a Google Access Token.
+	var token = result.credential.accessToken;
+	// The signed-in user info.
+	var user = result.user;
+	});
 })
 
 ipc.on("needuser", function(event) {
@@ -660,24 +660,14 @@ ipc.on("needuser", function(event) {
 //update the user settings
 ipc.on("updateSettings", function(event, lang, date, sound, copy,format) {
 	try{
-		var dbref = database.ref();
-		dbref
-			.child(firebase.auth().currentUser.uid)
-			.child("Settings")
-			.update({
+		firestore.collection(firebase.auth().currentUser.uid).doc("Settings").update({
 				language: lang,
 				dateFormat: date,
 				sound: sound,
 				copyToMain: copy,
 				defaultToImages: format
-			});
-		var settings = {
-			language: lang,
-			dateFormat: date,
-			sound: sound,
-			copyToMain: copy,
-			defaultToImages: format
-		};
+		})
+		
 		mainWindow.webContents.send("returnSettings", settings);
 	}
 	catch(error){
@@ -690,14 +680,11 @@ ipc.on("updateSettings", function(event, lang, date, sound, copy,format) {
 ipc.on("initialSettings", function(event, arg) {
 	try
 	{
-		var settingref = database.ref();
-		settingref
-			.child(firebase.auth().currentUser.uid)
-			.child("Settings")
-			.once("value")
-			.then(function(snapshot) {
-				event.sender.send("returnSettings", snapshot.val());
-			});
+
+		firestore.collection(firebase.auth().currentUser.uid).doc("Settings").get().then(function(doc){
+			event.sender.send("returnSettings", doc.data());
+		})
+	
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -707,12 +694,10 @@ ipc.on("initialSettings", function(event, arg) {
 //return the settings of the user
 ipc.on("getSettings", function(event, arg) {
 	try{
-		database
-			.ref(firebase.auth().currentUser.uid + "/Settings")
-			.once("value")
-			.then(function(snapshot) {
-				event.sender.send("returnSettings", snapshot.val());
-			});
+		firestore.collection(firebase.auth().currentUser.uid).doc("Settings").get().then(function(doc){
+			event.sender.send("returnSettings", doc.data());
+		})
+		
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -793,93 +778,114 @@ ipc.on("newclip", function(event, args) {
 		//found is used to check if the clip is already in the current folder
 		let found = 0;
 
-		//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
-		if (args[4] == "0") {
-			var ref = database
-				.ref(
-					firebase.auth().currentUser.uid + "/Folders/" + args[0] + "/cliphistory"
-				)
-				.orderByChild("kleep")
-				.equalTo(args[1]);
-		} else {
-			var ref = database
-				.ref("Groups/" + args[4] + "/cliphistory")
-				.orderByChild("kleep")
-				.equalTo(args[1]);
-		}
+		var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(args[0]) 
+		console.log(Buffer.byteLength(args[1], 'utf8') + " bytes")
+		if(Buffer.byteLength(args[1], 'utf8')<1500)
+		{
+			fref.where("kleep","==",args[1]).get().then(function(querySnapshot) {
+				if(querySnapshot.empty)
+				{
+					fref.add({
+							kleep: args[1],
+							timestamp: d.getTime(),
+							color: args[2],
+							bytesize: Buffer.byteLength(args[1], 'utf8')
+					})
 
-		ref
-			.once("value")
-			.then(function(snapshot) {
-				//if it exists then update the timestamp of the clip
-				if (snapshot.exists()) {
-					found = found + snapshot.numChildren();
-					var clipid = Object.keys(snapshot.val())[0];
-					
-					if (args[3] == "create") {
-						snapshot.ref.update({
-							[clipid + "/timestamp"]: d.getTime()
-							//[clipid + '/color']: args[2]
-						});
+				}
+				else{
+					querySnapshot.forEach(function(doc) {
+						// doc.data() is never undefined for query doc snapshots
+						console.log(doc.id, " => ", doc.data());
+						if(args[3]=="create")
+					{
+						fref.doc(doc.id).update({
+							timestamp: d.getTime()
+						})
 					}
-					if (args[3] == "colorChange") {
-						snapshot.ref.update({
-							[clipid + "/color"]: args[2]
-						});
+					if(args[3]=="colorChange")
+					{
+						fref.doc(doc.id).update({
+							color: args[2]
+						})
 					}
+					});
+				}
+				
+				
+				
+				
+			})
+		}
+		else
+		{
+			var foundkleep = false;
+			fref.where("bytesize",">",1499).get().then(function(querySnapshot) {
+
+					console.log("TRYING THE BIG BOYS")
+					querySnapshot.forEach(function(doc) {
+						// doc.data() is never undefined for query doc snapshots
+
+						var kleepdata = doc.data()
+						
+						if(kleepdata.kleep == args[1])
+						{
+							foundkleep=true
+							if(args[3]=="create")
+							{
+								fref.doc(doc.id).update({
+									timestamp: d.getTime()
+								})
+							}
+							if(args[3]=="colorChange")
+							{
+								fref.doc(doc.id).update({
+									color: args[2],
+									timestamp: d.getTime()
+								})
+							}
+							
+						}
+						
+						
+						});
+				
+				
+				
+				
+				
+			}).then(function(){
+				if(foundkleep==false)
+				{
+						fref.add({
+							kleep: args[1],
+							timestamp: d.getTime(),
+							color: args[2],
+							bytesize: Buffer.byteLength(args[1], 'utf8')
+					})
 				}
 			})
-			.then(function() {
-				//had to do a the instead of else as a new db ref was needed
-				//here we go ahead and create it if it wasn't there
-				if (found == 0) {
-					var dbref = database.ref();
-					if (args[4] == "0") {
-						var newclipref = dbref
-							.child(firebase.auth().currentUser.uid)
-							.child("Folders")
-							.child(args[0])
-							.child("cliphistory")
-							.push();
-					} else {
-						var newclipref = dbref
-							.child("Groups")
-							.child(args[4])
-							.child("cliphistory")
-							.push();
-					}
+		}
+		//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
 
-					newclipref.set({
-						kleep: args[1],
-						timestamp: d.getTime(),
-						color: args[2]
-					});
-					event.sender.send("print", "NEW CLIP CREATED  with color:" + args[2]);
-				} else {
-					event.sender.send("print", "CLIP UPDATED with color:" + args[2]);
-				}
-			});
 		}
 		catch(error){
 			event.sender.send("printerror",error )
 		}
 });
 
-ipc.on("annotate", function(event, folder, clip, annotation) {
+ipc.on("annotate", function(event, folder, clip, annot) {
 	try
 	{
-	var ref = database
-		.ref(
-			firebase.auth().currentUser.uid + "/Folders/" + folder + "/cliphistory"
-		)
-		.orderByChild("kleep")
-		.equalTo(clip);
-	ref.once("value").then(function(snapshot) {
-		var clipid = Object.keys(snapshot.val())[0];
-		snapshot.ref.update({
-			[clipid + "/annotation"]: annotation
+		var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(folder) 
+		fref.where("kleep","==",clip).get().then(function(querySnapshot){
+			querySnapshot.forEach(function(doc) {
+				fref.doc(doc.id).update({
+					annotation: annot
+				})
+			});
 		});
-	});
+	
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -890,34 +896,15 @@ ipc.on("annotate", function(event, folder, clip, annotation) {
 //as of now we are creating them in 2 separate locations: one with only the names and one with the cliphistory
 ipc.on("filecreate", function(event, fname, passwordprotectedIn, passwordIn) {
 	try{
-		var dbref = database.ref();
 
-		dbref
-			.child(firebase.auth().currentUser.uid)
-			.child("Folders")
-			.child(fname)
-			.set({
-				name: fname,
-				private: "yes",
-				passwordprotected: passwordprotectedIn,
-				password: passwordIn
-			});
-
-		dbref
-			.child(firebase.auth().currentUser.uid)
-			.child("FolderNames")
-			.child(fname)
-			.set({
-				name: fname
-			});
-		var fnamesref = database.ref(
-			firebase.auth().currentUser.uid + "/FolderNames"
-		);
-		fnamesref.once("value", function(snap) {
-			//send the folder names to be shown
-
-			event.sender.send("newfile", snap.val());
-	});
+		firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(fname).add({kleep:"New Folder!"});
+		firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").update({
+			folders:firebase.firestore.FieldValue.arrayUnion(fname)
+		});
+		firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
+			event.sender.send("newfile", doc.data());
+		})
+		
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -928,17 +915,12 @@ ipc.on("filecreate", function(event, fname, passwordprotectedIn, passwordIn) {
 ipc.on("finishload", function(event) {
 	try
 	{
-		var fnamesref = database.ref(
-			firebase.auth().currentUser.uid + "/FolderNames"
-		);
-		fnamesref.on("value", function(snap) {
-			mainWindow.webContents.send("newfile", snap.val());
-		});
 
-		var groupref = database.ref(firebase.auth().currentUser.uid + "/Groups");
-		groupref.on("value", function(snap) {
-			mainWindow.webContents.send("newgroup", snap.val());
-		});
+		firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
+			event.sender.send("newfile", doc.data());
+		})
+
+		
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -949,9 +931,10 @@ ipc.on("finishload", function(event) {
 //WHEN NEW FILE NEED TO CLOSE IT AND DO NEW QUERY
 //NEEDS TO BE A GLOBAL VARIABLE
 var fileref = database.ref();
-
+let unsubscribe;
 //the renderer process is asking for the table
 ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
+	console.log("GETTABLE")
 	//event.sender.send("print", "got this from gettable " + fname + timeselected);
 	try
 	{
@@ -963,48 +946,38 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
 
 		let d = new Date();
 
+		
+
+
 		//check if there is a specific time chosen
 		//ordered by time in ascending order
 		if (timeselected == 0) {
 
 			//check if it is a group folder
 			if (isgroup == 0) {
-				fileref = database
-					.ref(
-						firebase.auth().currentUser.uid + "/Folders/" + fname + "/cliphistory"
-					)
-					.orderByChild("timestamp");
-			} else {
-				fileref = database
-					.ref("Groups/" + isgroup + "/cliphistory")
-					.orderByChild("timestamp");
-			}
+
+				
+			} 
+
+				
+				
+			
 		} 
 		else {
 			//Time filter is on
 			if (isgroup == 0) {
-				fileref = database
-					.ref(
-						firebase.auth().currentUser.uid + "/Folders/" + fname + "/cliphistory"
-					)
-					.orderByChild("timestamp")
-					.endAt(parseInt(timeselected));
-			} else {
-				fileref = database
-					.ref("Groups/" + isgroup + "/cliphistory")
-					.orderByChild("timestamp")
-					.endAt(parseInt(timeselected));
-			}
+				var tempref = firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(fname).where("timestamp","<=",parseInt(timeselected)).orderBy("timestamp")
+
+				
+			} 
 		}
 
-		//LISTENER CHANGES WHEN VALUE CHANGES
-		//as we print the value we need to go each by each so it is actually ordered
-		fileref.on("value", function(snapshot) {
+		unsubscribe=tempref.onSnapshot(function(querySnapshot) {
 			var orderedlist = [];
-			snapshot.forEach(function(child) {
-				orderedlist.push(child.val());
+			querySnapshot.forEach(documentSnapshot => {
+				orderedlist.push(documentSnapshot.data());
 			});
-
+			
 			if(sync==1)
 			{
 				event.sender.send("tablesync", orderedlist);
@@ -1012,12 +985,17 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
 			}
 			else
 			{
-				event.sender.send("table", orderedlist);
+				if(mainWindow)
+				{
+					event.sender.send("table", orderedlist);
+				}
+				
 			}
 		});
+	
 	}
 	catch(error){
-		event.sender.send("printerror",error )
+		console.log(error)
 	}
 	
 });
@@ -1038,30 +1016,10 @@ ipc.on("timeselected", function(event, argend) {
 	}
 });
 
-//send all the folders to the renderer window
-ipc.on("printfolder", function(event, fname) {
-	try{
-	var folderref = database
-		.ref(firebase.auth().currentUser.uid + "/Folders/" + fname + "/cliphistory")
-		.orderByChild("timestamp")
-		.once("value")
-		.then(function(snapshot) {
-			var orderedlist = [];
-			snapshot.forEach(function(child) {
-				orderedlist.push(child.val());
-			});
-			createShowFolderWindow().then(
-				folderWindow.webContents.send("cliplist", orderedlist)
-			);
-			//event.sender.send("print", orderedlist);
-		});
-	}
-	catch(error){
-		event.sender.send("printerror",error )
-	}
-});
+
 
 //check if a folder has password
+//ya no se usa
 ipc.on("checkForPassword", function(event, fname) {
 	try
 	{
@@ -1085,49 +1043,26 @@ ipc.on("checkForPassword", function(event, fname) {
 ipc.on("deleteClip", function(event, args) {
 	try{
 		var key;
+		var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(args[0]) 
+		
+		fref.where("kleep","==",args[1]).get().then(function(querySnapshot) {
+			
+			
+				querySnapshot.forEach(function(doc) {
+					// doc.data() is never undefined for query doc snapshots
+					console.log(doc.id, " => ", doc.data());
+					
+					fref.doc(doc.id).delete()
+				
+				})
+			
+			
+			
+			
+			
+		})
 
-		//args[2] is to check if it is in a group
-		if (args[2] == "0") {
-			var ref = database
-				.ref(
-					firebase.auth().currentUser.uid + "/Folders/" + args[0] + "/cliphistory"
-				)
-				.orderByChild("kleep")
-				.equalTo(args[1])
-				.once("value")
-				.then(function(snapshot) {
-					key = Object.keys(snapshot.val())[0];
-					//snapshot.getRef().remove();
-				})
-				.then(function() {
-					event.sender.send("print", key);
-					var refToDelete = database.ref(
-						firebase.auth().currentUser.uid +
-							"/Folders/" +
-							args[0] +
-							"/cliphistory/" +
-							key
-					);
-					refToDelete.remove();
-				});
-		} else {
-			var ref = database
-				.ref("Groups/" + args[2] + "/cliphistory")
-				.orderByChild("kleep")
-				.equalTo(args[1])
-				.once("value")
-				.then(function(snapshot) {
-					key = Object.keys(snapshot.val())[0];
-					//snapshot.getRef().remove();
-				})
-				.then(function() {
-					event.sender.send("print", key);
-					var refToDelete = database.ref(
-						"Groups/" + args[2] + "/cliphistory/" + key
-					);
-					refToDelete.remove();
-				});
-		}
+
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -1135,49 +1070,36 @@ ipc.on("deleteClip", function(event, args) {
 });
 
 ipc.on("deleteFolder", function(event, arg) {
+
+		//var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(name) 
+		
+		//fref.delete()
+
+		
 	try{
+
 		var name = arg;
+
+		var fref2 =firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames")
+		fref2.update({
+			folders: firebase.firestore.FieldValue.arrayRemove(name)
+		}).then(
+			firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
+				event.sender.send("newfile", doc.data());
+			})
+		)
+
+		
 		var key;
 		event.sender.send("print", name);
-		var ref = database
-			.ref(firebase.auth().currentUser.uid + "/Folders/")
-			.orderByChild("name")
-			.equalTo(name)
-			.once("value")
-			.then(function(snapshot) {
-				key = Object.keys(snapshot.val())[0];
-				//snapshot.getRef().remove();
-			})
-			.then(function() {
-				event.sender.send("print", name);
-				var refToDelete = database.ref(
-					firebase.auth().currentUser.uid + "/Folders/" + key
-				);
-				refToDelete.remove();
-			});
-
-		var ref2 = database
-			.ref(firebase.auth().currentUser.uid + "/FolderNames/")
-			.orderByChild("name")
-			.equalTo(name)
-			.once("value")
-			.then(function(snapshot) {
-				key = Object.keys(snapshot.val())[0];
-				//snapshot.getRef().remove();
-			})
-			.then(function() {
-				event.sender.send("print", name);
-				var refToDelete2 = database.ref(
-					firebase.auth().currentUser.uid + "/FolderNames/" + key
-				);
-				refToDelete2.remove();
-			});
+		
 	}
 	catch(error){
 		event.sender.send("printerror",error )
 	}
 });
 
+/*
 //create a group folder. currently the password is set, might need to change it for a numerical code
 ipc.on("createGroup", function(event, name, password) {
 	try{
@@ -1249,9 +1171,11 @@ ipc.on("getGroupKey", function(event, arg) {
 		event.sender.send("printerror",error )
 	}
 });
+*/
 
 //store a image
 ipc.on("picture", function(event, arg) {
+	console.log("PICTURE")
 	try{
 		var dimensions = {};
 		dimensions.width = 0;
@@ -1266,7 +1190,7 @@ ipc.on("picture", function(event, arg) {
 		}
 
 		firestore
-			.collection(firebase.auth().currentUser.uid)
+			.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images")
 			.add({
 				image: clip.toDataURL(),
 				timestamp: d.getTime(),
@@ -1285,11 +1209,11 @@ ipc.on("picture", function(event, arg) {
 	}
 });
 
-var unsubscribe;
+
 //return the images
 ipc.on("getImages", function(event, arg) {
-	try
-	{
+	//try
+	//{
 		fileref.off();
 		var images = [];
 		if (typeof unsubscribe !== "undefined") {
@@ -1300,7 +1224,7 @@ ipc.on("getImages", function(event, arg) {
 		//listener that checks for changes
 
 		unsubscribe = firestore
-			.collection(firebase.auth().currentUser.uid)
+			.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images")
 			.onSnapshot(function(querySnapshot) {
 				var newImg = [];
 				querySnapshot.forEach(documentSnapshot => {
@@ -1328,16 +1252,16 @@ ipc.on("getImages", function(event, arg) {
 		event.sender.send("recieveImages", images);
 		});
 		*/
-	}
-	catch(error){
-		event.sender.send("printerror",error )
-	}
+//	}
+	//catch(error){
+	//	event.sender.send("printerror",error )
+	//}
 });
 
 ipc.on("storeImageDimensions", function(event, w, h, image) {
 	try{
 		var dimensionRef = firestore
-			.collection(firebase.auth().currentUser.uid)
+			.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images")
 			.doc(image);
 
 		var setWithMerge = dimensionRef.set(
@@ -1359,7 +1283,7 @@ ipc.on("storeImageDimensions", function(event, w, h, image) {
 ipc.on("deleteImage", function(event, arg) {
 	try{
 		firestore
-			.collection(firebase.auth().currentUser.uid)
+			.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images")
 			.doc(arg)
 			.delete()
 			.then(function() {
@@ -1501,62 +1425,95 @@ setInterval(function() {
 				//found is used to check if the clip is already in the current folder
 				let found = 0;
 		
-				//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
 				
-					var refsync = database
-						.ref(
-							firebase.auth().currentUser.uid + "/Folders/Main/cliphistory"
-						)
-						.orderByChild("kleep")
-						.equalTo(clip);
-				 
-		
-				refsync
-					.once("value")
-					.then(function(snapshot) {
-						//if it exists then update the timestamp of the clip
-						if (snapshot.exists()) {
-							found = found + snapshot.numChildren();
-							var clipid = Object.keys(snapshot.val())[0];
+
+		//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
+
+				var frefsync =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Main") 
+
+				if(Buffer.byteLength(clip, 'utf8')<1500)
+				{
+					frefsync.where("kleep","==",clip).get().then(function(querySnapshot) {
+						if(querySnapshot.empty)
+						{
+							frefsync.add({
+									kleep: clip,
+									timestamp: d.getTime(),
+									color: "white"
+							})
+			
+						}
+						else{
+							querySnapshot.forEach(function(doc) {
+								// doc.data() is never undefined for query doc snapshots
+								console.log(doc.id, " => ", doc.data());
+								
+							
+								frefsync.doc(doc.id).update({
+									timestamp: d.getTime()
+								})
 							
 							
-								snapshot.ref.update({
-									[clipid + "/timestamp"]: d.getTime()
+							});
+						}
+						
+						
+				
+					})
+				}
+				
+				else
+				{
+					var foundkleep = false;
+					frefsync.where("bytesize",">",1499).get().then(function(querySnapshot) {
+
+							console.log("TRYING THE BIG BOYS")
+							querySnapshot.forEach(function(doc) {
+								// doc.data() is never undefined for query doc snapshots
+
+								var kleepdata = doc.data()
+								
+								if(kleepdata.kleep == clip)
+								{
+									foundkleep=true
+									
+									frefsync.doc(doc.id).update({
+											timestamp: d.getTime()
+										})
+									
+									
+									
+								}
+								
 								
 								});
-							
-							
+						
+						
+						
+						
+						
+					}).then(function(){
+						if(foundkleep==false)
+						{
+							frefsync.add({
+									kleep: clip,
+									timestamp: d.getTime(),
+									color: "white",
+									bytesize: Buffer.byteLength(clip, 'utf8')
+							})
 						}
 					})
-					.then(function() {
-						//had to do a the instead of else as a new db ref was needed
-						//here we go ahead and create it if it wasn't there
-						if (found == 0) {
-							
-							var dbrefsync = database.ref();
-							
-								var newcliprefsync = dbrefsync
-									.child(firebase.auth().currentUser.uid)
-									.child("Folders")
-									.child("Main")
-									.child("cliphistory")
-									.push();
-							
-		
-							newcliprefsync.set({
-								kleep: clip,
-								timestamp: d.getTime(),
-								color: "white"
-							});
-						
-							
-							console.log("NOT FOUND NEED TO INSERT")
-						} 
-					});
 				}
-				catch(error){
+
+
+
+
+
 					
-				}
+			}
+			catch(error){
+					
+			}
 
 				
 		}
