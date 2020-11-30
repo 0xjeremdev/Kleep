@@ -58,6 +58,13 @@ module.exports = {
         $("#modal-fullclip .message").val("");
         $("#modal-fullclip #annotation").val("");
     });
+
+    $(".btn-copy-annot").click(function() {
+
+        var text = $("#modal-fullclip .message").text();
+        clipboard.writeText(text);
+        
+    });
 }
     
 

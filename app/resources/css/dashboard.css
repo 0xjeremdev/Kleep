@@ -983,6 +983,26 @@ height: auto;
   font-size: 14px;
   font-weight: 400;
 }
+#modal-fullclip .actions .btn-copy-annot {
+  font-family: "Proxima Nova";
+  font-size: 15px;
+  font-weight: 400;
+  padding: 4px 10px;
+  color: white;
+  background-color: #26c296;
+  border-radius: 4px;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  transition: 150ms;
+  text-align: center;
+  text-decoration: none;
+  height: auto;
+  margin-left: 8px;
+  width: 80px;
+  align-self: stretch;
+}
+
 #modal-fullclip .actions .btn-annotate {
   font-family: "Proxima Nova";
   font-size: 15px;
