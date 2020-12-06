@@ -485,10 +485,7 @@ const mainTemplate = [
 	}
 ];
 
-//if mac add empty object to menu
-//if (process.platform == 'darwin') {
-//mainTemplate.unshift({});
-//}
+
 
 ipc.on("changeMenu", function(event, arg) {
 	try{
@@ -502,7 +499,7 @@ ipc.on("changeMenu", function(event, arg) {
 });
 
 ipc.on("createWindow", function(event, arg) {
-	event.sender.send("print", arg);
+	
 	try{
 		if (arg == "settings") {
 			createSettingsWindow();
@@ -521,20 +518,20 @@ ipc.on("createWindow", function(event, arg) {
 //
 //FIREBASE
 //
-//const {Firestore} = require('@google-cloud/firestore');
 var firebase = require("firebase");
 require("firebase/firestore");
 
+
+
 var firebaseConfig = {
-	apiKey: "AIzaSyC2gjoCBBXFcE8U-Rm3fBbGcQIW6ZMcR9Y",
-	authDomain: "kleep-86262.firebaseapp.com",
-	databaseURL: "https://kleep-86262.firebaseio.com",
-	projectId: "kleep-86262",
-	storageBucket: "kleep-86262.appspot.com",
-	messagingSenderId: "1004954643955",
-	appId: "1:1004954643955:web:a4701d5702593279bbf686",
-	measurementId: "G-018C9JYCZL"
-};
+    apiKey: "AIzaSyC98dymacpS0LUoB7BKyUMSwu7eOe6cKL0",
+    authDomain: "uihelp-7f36c.firebaseapp.com",
+    databaseURL: "https://uihelp-7f36c-default-rtdb.firebaseio.com",
+    projectId: "uihelp-7f36c",
+    storageBucket: "uihelp-7f36c.appspot.com",
+    messagingSenderId: "696335520283",
+    appId: "1:696335520283:web:5637fcdc19646954591ebe"
+  };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
@@ -552,8 +549,10 @@ ipc.on("signup", function(event, args) {
 		.auth()
 		.createUserWithEmailAndPassword(args[0], args[1])
 		.then(function() {
-			event.sender.send("signupresult", "success");
-			
+			if(mainWindow)
+			{
+				event.sender.send("signupresult", "success");
+			}
 			firestore.collection(firebase.auth().currentUser.uid).doc("Profile").set({
 				paid: "Yes",
 				paidUntil: "30-12-9999",
@@ -575,8 +574,12 @@ ipc.on("signup", function(event, args) {
 				count:2
 			});
 			firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Main").add({kleep:"Welcome to Kleep!"});
-			//firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images").add({init:"init"});
 			
+			firebase.auth().currentUser.sendEmailVerification().then(function() {
+				console.log("!!!!!!!!!!!!!!!!SEEEEEEEENT!!!!!!!!!!!!")
+			  }).catch(function(error) {
+				console.log(error)
+			  });
 				
 		})
 		/*
@@ -597,22 +600,28 @@ ipc.on("signin", function(event, args) {
 		.auth()
 		.signInWithEmailAndPassword(args[0], args[1])
 		.then(function() {
-			console.log(firebase.auth().currentUser.uid);
+			//console.log(firebase.auth().currentUser.uid);
 			setTimeout(() => { 
-				//var dbref = database.ref();
+				
 				firestore.collection(firebase.auth().currentUser.uid).doc("Profile").get().then(function(doc){
-					console.log(doc)
+					//console.log(doc)
 					var data = doc.data();
-					console.log(data)
+					//console.log(data)
 					var paid = data.paid;
-					console.log(paid)
+					//console.log(paid)
 					if(paid=="Yes")
 					{
-						event.sender.send("loginresult", "success");
+						if(mainWindow)
+						{
+							event.sender.send("loginresult", "success");
+						}
 					}
 					else
 					{
-						event.sender.send("loginresult", "failure");
+						if(mainWindow)
+						{
+							event.sender.send("loginresult", "failure");
+						}
 					}
 				})
 				
@@ -625,7 +634,10 @@ ipc.on("signin", function(event, args) {
 		})
 		.catch(function(error) {
 			if (error !== null) {
-				event.sender.send("loginresult", error);
+				if(mainWindow)
+				{
+					event.sender.send("loginresult", error);
+				}
 				return;
 			} else {
 				event.sender.send("loginresult", "failure");
@@ -633,21 +645,14 @@ ipc.on("signin", function(event, args) {
 		});
 })
 
-ipc.on("googleSignup",function(event){
-	var provider = new firebase.auth.GoogleAuthProvider();
-	provider.addScope('profile');
-	provider.addScope('email');
-	firebase.auth().signInWithPopup(provider).then(function(result) {
-	// This gives you a Google Access Token.
-	var token = result.credential.accessToken;
-	// The signed-in user info.
-	var user = result.user;
-	});
-})
+
 
 ipc.on("needuser", function(event) {
 	try{
-		event.sender.send("userback", firebase.auth().currentUser);
+		if(mainWindow)
+		{
+			event.sender.send("userback", firebase.auth().currentUser);
+		}
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -668,7 +673,10 @@ ipc.on("updateSettings", function(event, lang, date, sound, copy,format) {
 				defaultToImages: format
 		})
 		
-		mainWindow.webContents.send("returnSettings", settings);
+		if(mainWindow)
+		{
+			mainWindow.webContents.send("returnSettings", settings);
+		}
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -682,7 +690,10 @@ ipc.on("initialSettings", function(event, arg) {
 	{
 
 		firestore.collection(firebase.auth().currentUser.uid).doc("Settings").get().then(function(doc){
-			event.sender.send("returnSettings", doc.data());
+			if(mainWindow)
+			{
+				event.sender.send("returnSettings", doc.data());
+			}
 		})
 	
 	}
@@ -695,7 +706,11 @@ ipc.on("initialSettings", function(event, arg) {
 ipc.on("getSettings", function(event, arg) {
 	try{
 		firestore.collection(firebase.auth().currentUser.uid).doc("Settings").get().then(function(doc){
-			event.sender.send("returnSettings", doc.data());
+			if(mainWindow)
+			{
+				event.sender.send("returnSettings", doc.data());
+			}
+			
 		})
 		
 	}
@@ -723,8 +738,11 @@ function Logout() {
 		.signOut()
 		.then(
 			function() {
-				mainWindow.webContents.send("logout", firebase.auth().currentUser);
-				// Sign-out successful.
+				if(mainWindow)
+				{
+					mainWindow.webContents.send("logout", firebase.auth().currentUser);
+				}
+					// Sign-out successful.
 				const menu = Menu.buildFromTemplate(logintemplate);
 				//Insert Menu
 				Menu.setApplicationMenu(menu);
@@ -738,7 +756,10 @@ function Logout() {
 
 ipc.on("getUser", function(event, arg) {
 	try{
-		event.sender.send("returnUser", firebase.auth().currentUser.email);
+		if(mainWindow)
+		{
+			event.sender.send("returnUser", firebase.auth().currentUser.email);
+		}
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -749,16 +770,25 @@ ipc.on("getUser", function(event, arg) {
 ipc.on("passwordRecovery", function(event, email) {
 	try
 	{
-		event.sender.send("userback", "IN");
+		if(mainWindow)
+		{
+			event.sender.send("userback", "IN");
+		}
 		var auth = firebase.auth();
 
 		auth
 			.sendPasswordResetEmail(email)
 			.then(function() {
-				event.sender.send("userback", "YES");
+				if(mainWindow)
+				{
+					event.sender.send("userback", "YES");
+				}
 			})
 			.catch(function(error) {
-				event.sender.send("userback", "NO");
+				if(mainWindow)
+				{
+					event.sender.send("userback", "NO");
+				}
 			});
 	}
 	catch(error){
@@ -779,7 +809,7 @@ ipc.on("newclip", function(event, args) {
 		let found = 0;
 
 		var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(args[0]) 
-		console.log(Buffer.byteLength(args[1], 'utf8') + " bytes")
+		//console.log(Buffer.byteLength(args[1], 'utf8') + " bytes")
 		if(Buffer.byteLength(args[1], 'utf8')<1500)
 		{
 			fref.where("kleep","==",args[1]).get().then(function(querySnapshot) {
@@ -796,7 +826,7 @@ ipc.on("newclip", function(event, args) {
 				else{
 					querySnapshot.forEach(function(doc) {
 						// doc.data() is never undefined for query doc snapshots
-						console.log(doc.id, " => ", doc.data());
+						//console.log(doc.id, " => ", doc.data());
 						if(args[3]=="create")
 					{
 						fref.doc(doc.id).update({
@@ -822,7 +852,7 @@ ipc.on("newclip", function(event, args) {
 			var foundkleep = false;
 			fref.where("bytesize",">",1499).get().then(function(querySnapshot) {
 
-					console.log("TRYING THE BIG BOYS")
+					//console.log("TRYING THE BIG BOYS")
 					querySnapshot.forEach(function(doc) {
 						// doc.data() is never undefined for query doc snapshots
 
@@ -866,7 +896,6 @@ ipc.on("newclip", function(event, args) {
 				}
 			})
 		}
-		//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
 
 		}
 		catch(error){
@@ -902,7 +931,10 @@ ipc.on("filecreate", function(event, fname, passwordprotectedIn, passwordIn) {
 			folders:firebase.firestore.FieldValue.arrayUnion(fname)
 		});
 		firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
-			event.sender.send("newfile", doc.data());
+			if(mainWindow)
+			{
+				event.sender.send("newfile", doc.data());
+			}
 		})
 		
 	}
@@ -917,7 +949,10 @@ ipc.on("finishload", function(event) {
 	{
 
 		firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
-			event.sender.send("newfile", doc.data());
+			if(mainWindow)
+			{
+				event.sender.send("newfile", doc.data());
+			}
 		})
 
 		
@@ -934,8 +969,7 @@ var fileref = database.ref();
 let unsubscribe;
 //the renderer process is asking for the table
 ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
-	console.log("GETTABLE")
-	//event.sender.send("print", "got this from gettable " + fname + timeselected);
+	//console.log("GETTABLE")
 	try
 	{
 		//reset the db ref
@@ -980,7 +1014,10 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
 			
 			if(sync==1)
 			{
-				event.sender.send("tablesync", orderedlist);
+				if(mainWindow)
+				{
+					event.sender.send("tablesync", orderedlist);
+				}
 				sync=0;
 			}
 			else
@@ -1009,7 +1046,10 @@ ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
 //it comes from the select Time window
 ipc.on("timeselected", function(event, argend) {
 	try{
-		mainWindow.webContents.send("newtime", argend);
+		if(mainWindow)
+		{
+			mainWindow.webContents.send("newtime", argend);
+		}
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -1027,11 +1067,14 @@ ipc.on("checkForPassword", function(event, fname) {
 		.ref(firebase.auth().currentUser.uid + "/Folders/" + fname)
 		.once("value")
 		.then(function(snapshot) {
-			event.sender.send(
-				"passwordNeeded",
-				snapshot.val().passwordprotected,
-				snapshot.val().password
-			);
+			if(mainWindow)
+			{
+				event.sender.send(
+					"passwordNeeded",
+					snapshot.val().passwordprotected,
+					snapshot.val().password
+				);
+			}
 		});
 	}
 	catch(error){
@@ -1050,7 +1093,7 @@ ipc.on("deleteClip", function(event, args) {
 			
 				querySnapshot.forEach(function(doc) {
 					// doc.data() is never undefined for query doc snapshots
-					console.log(doc.id, " => ", doc.data());
+					//console.log(doc.id, " => ", doc.data());
 					
 					fref.doc(doc.id).delete()
 				
@@ -1071,9 +1114,7 @@ ipc.on("deleteClip", function(event, args) {
 
 ipc.on("deleteFolder", function(event, arg) {
 
-		//var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(name) 
 		
-		//fref.delete()
 
 		
 	try{
@@ -1085,13 +1126,16 @@ ipc.on("deleteFolder", function(event, arg) {
 			folders: firebase.firestore.FieldValue.arrayRemove(name)
 		}).then(
 			firestore.collection(firebase.auth().currentUser.uid).doc("FolderNames").get().then(function(doc){
-				event.sender.send("newfile", doc.data());
+				if(mainWindow)
+				{
+					event.sender.send("newfile", doc.data());
+				}
 			})
 		)
 
 		
 		var key;
-		event.sender.send("print", name);
+		
 		
 	}
 	catch(error){
@@ -1176,6 +1220,7 @@ ipc.on("getGroupKey", function(event, arg) {
 //store a image
 ipc.on("picture", function(event, arg) {
 	console.log("PICTURE")
+	
 	try{
 		var dimensions = {};
 		dimensions.width = 0;
@@ -1184,11 +1229,11 @@ ipc.on("picture", function(event, arg) {
 		try {
 			var clip = clipboard.readImage();
 			dimensions = sizeOf(clip.toPNG());
-			//event.sender.send("print1","dimension w" + typeof dimensions);
 		} catch (error) {
 			event.sender.send("printerror", error);
 		}
 
+		console.log(Buffer.byteLength(clip.toDataURL(), 'utf8'))
 		firestore
 			.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images")
 			.add({
@@ -1198,10 +1243,10 @@ ipc.on("picture", function(event, arg) {
 				height: dimensions.height
 			})
 			.then(function(docRef) {
-				event.sender.send("print", docRef.id);
+				//event.sender.send("print", docRef.id);
 			})
 			.catch(function(error) {
-				event.sender.send("print", error);
+				//event.sender.send("print", error);
 			});
 	}
 	catch(error){
@@ -1219,7 +1264,7 @@ ipc.on("getImages", function(event, arg) {
 		if (typeof unsubscribe !== "undefined") {
 			unsubscribe();
 
-			event.sender.send("print", "unsub");
+			
 		}
 		//listener that checks for changes
 
@@ -1236,8 +1281,11 @@ ipc.on("getImages", function(event, arg) {
 						documentSnapshot.get("height")
 					]);
 				});
-				event.sender.send("print", "I AM INSIDE LISTENER");
-				event.sender.send("recieveImages", newImg);
+				//event.sender.send("print", "I AM INSIDE LISTENER");
+				if(mainWindow)
+				{
+					event.sender.send("recieveImages", newImg);
+				}
 			});
 
 		/*
@@ -1272,7 +1320,7 @@ ipc.on("storeImageDimensions", function(event, w, h, image) {
 			{ merge: true }
 		);
 
-		event.sender.send("print", "added dimensions");
+		//event.sender.send("print", "added dimensions");
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -1287,7 +1335,7 @@ ipc.on("deleteImage", function(event, arg) {
 			.doc(arg)
 			.delete()
 			.then(function() {
-				event.sender.send("print", "document deleted");
+				//event.sender.send("print", "document deleted");
 			})
 			.catch(function(error) {
 				event.sender.send("print", error);
@@ -1333,13 +1381,10 @@ ipc.on("setDisconnect", function(event, arg) {
 			.onDisconnect()
 			.set(isOfflineForDatabase)
 			.then(function() {
-				event.sender.send("print", "DISCONNECTED");
+				//event.sender.send("print", "DISCONNECTED");
 			});
 
-		event.sender.send(
-			"print",
-			"on Disconnect set!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		);
+		
 	}
 	catch(error){
 		event.sender.send("printerror",error )
@@ -1381,7 +1426,7 @@ function checkConnection() {
 			if (snapshot.val() == false) {
 				return;
 			} else {
-				mainWindow.webContents.send("print", "WE HAVE CONNECTION");
+				//mainWindow.webContents.send("print", "WE HAVE CONNECTION");
 			}
 
 			// If we are currently connected, then use the 'onDisconnect()'
@@ -1407,7 +1452,7 @@ function checkConnection() {
 
 var lastclip;
 setInterval(function() {
-	console.log("IN")
+	console.log(firebase.auth().currentUser.emailVerified)
 	//here we sync
 	if (firebase.auth().currentUser && mainWindow==null)
 	{
@@ -1446,7 +1491,7 @@ setInterval(function() {
 						else{
 							querySnapshot.forEach(function(doc) {
 								// doc.data() is never undefined for query doc snapshots
-								console.log(doc.id, " => ", doc.data());
+								//console.log(doc.id, " => ", doc.data());
 								
 							
 								frefsync.doc(doc.id).update({
