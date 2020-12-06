@@ -110,13 +110,12 @@ $(document).ready()
 
 	FoldersActions.initializeMainAsActive();
 
-	// Initialize folder content on first load of page
-	//$(".folder-Main").attr("class","item active");
+	
 
 	
 
 	// Initialize dropdown menu for Bulk Actions
-	initializeMetisMenu("#folder-bulk-actions");
+	//initializeMetisMenu("#folder-bulk-actions");
 	initializeMetisMenu("#content-bulk-actions");
 
   // Event listener for Copy button
@@ -166,9 +165,9 @@ function initializeMain() {
 // Add dynamic items in Folder Contents in main.html
 const generateData = function(query = "") {
 	// Initial date number
-	console.log("generate")
+	
 	const startDate = 10;
-	console.log(data)
+	
 	// Get cloneable row
 	const item = $(".Main .cloneable");
 
@@ -206,10 +205,12 @@ const generateData = function(query = "") {
 			color == "color-yellow" ||
 			color == "color-red" ||
 			color == "color-blue" ||
-			color == "color-red" ||
-			color == "color-green"
+			color == "color-violet" ||
+			color == "color-green" ||
+			color == "white"
 		) {
-			newItem.removeClass().addClass("item " + color);
+			newItem.find(".divider").removeClass().addClass("divider " + color)
+			//newItem.removeClass().addClass("item " + color);
 		}
 
 		// Remove cloneable class to so item will be shown
@@ -344,9 +345,7 @@ const generateImages = function(query = "") {
 			newItem.find(".date .day-number").text(day);
 			newItem.find(".title .image").attr("src", image);
 			newItem.find(".title").attr("id", key);
-			// Update name / description data
-			//newItem.find(".details .query-name").text(description);
-
+			
 			// Change dropdown id
 			// newItem.find(".dropdown-menu").attr("id", dropdownId);
 			newItem.find(".CircularCheckbox input").attr("id", checkboxId);
@@ -374,13 +373,12 @@ function getTable(sync = 0) {
 	
 	
 	if (connected) {
-		//console.log(images.length);
+		
 		if (images.length == 0) {
 			ipc.send("getImages", "x");
 		}
 
-		//let filename = document.getElementById("fname").textContent;
-		//filename = document.getElementById("fname").textContent;
+		
 		if (fnameglobal == "Images") {
 			console.log("aaaaaaaaaaaaa");
 
@@ -388,7 +386,6 @@ function getTable(sync = 0) {
 				.empty()
 				.addClass("images");
 			$("#list-scrollbar").append("<div class='loader'></div>");
-			//console.log(images.length)
 			if (images.length == 0) {
 				ipc.send("getImages", "x");
 			} else {
@@ -402,35 +399,6 @@ function getTable(sync = 0) {
 	}
 }
 
-setInterval(function() {
-
-	//console.log("SIZE OF SYNCDATA: "+syncData.length)
-	if(syncData.length>1)
-	//here we sync
-	{
-		//console.log("syncing!!!!!!!!!!!!!!!!!!!!")
-		//getTable(1);
-	}
-
-	checkInternetConnected().then((result)=>{
-		//console.log("connected");
-	}).catch((ex)=>{
-		//console.log(ex);
-		const snackbar = $("#snackbar");
-      
-		// Get snackbar element
-		snackbar.text("Disconnected");
-
-		// Add show class
-		snackbar.addClass("show");
-
-		// Hide the snackbar element by removing the show class after 3000ms (3 seconds)
-		setTimeout(function() {
-			snackbar.removeClass("show");
-		}, 5000);
-	})
-	
-}, 60000);
 
 
 
@@ -444,19 +412,15 @@ setInterval(function() {
 
 //constantly send a new clipboard to check if it is in the db
 setInterval(function() {
-	//console.log(clipboard.availableFormats())
 	var clip = clipboard.readImage();
+	console.log(connected)
 
-	if (Object.values(clipboard.availableFormats()).includes("text/rtf")) {
-		//console.log(clipboard.readRTF());
-	}
 
 	if (!Object.values(clipboard.availableFormats()).includes("image/png")||(userSettings["defaultToImages"]=="No" && Object.values(clipboard.availableFormats()).includes("text/plain"))) {
 		clip = clipboard.readText();
 
 		if (toggleclip == "Checked" && connected) {
 			if (lastclip !== clip && clip.length > 0) {
-				//console.log("Found a new clip that is different from last clip: "+ lastclip);
 				if (fnameglobal !== "Images") {
 					args = [fnameglobal, clip, "white", "create", isGroup];
 					ipc.send("newclip", args);
@@ -468,7 +432,6 @@ setInterval(function() {
 						color: "white",
 						group: isGroup
 					});
-					// console.log("sending newclip");
 				}
 				if (userSettings["sound"] == "Yes") {
 					new Audio("resources/assets/audio/click.mpeg").play();
@@ -484,7 +447,6 @@ setInterval(function() {
 						color: "white",
 						group: isGroup
 					});
-					//console.log("sending newclip to main");
 				}
 
 				let d = new Date();
@@ -493,26 +455,52 @@ setInterval(function() {
 				localStorage.clear();
 			}
 		}
+
+		if(!connected && toggleclip == "Checked")
+		{
+			if (lastclip !== clip && clip.length > 0) {
+				if (fnameglobal !== "Images") {
+					
+					syncData.push({
+						folder: fnameglobal,
+						value: clip,
+						action: "create",
+						color: "white",
+						group: isGroup
+					});
+				}
+				if (userSettings["sound"] == "Yes") {
+					new Audio("resources/assets/audio/click.mpeg").play();
+				}
+				if (userSettings["copyToMain"] == "Yes" && fnameglobal !== "Main") {
+					
+					syncData.push({
+						folder: "Main",
+						value: clip,
+						action: "create",
+						color: "white",
+						group: isGroup
+					});
+				}
+
+				
+			}
+		}
 		lastclip = clip;
 	} else {
 		if (toggleclip == "Checked" && connected) {
 			if (typeof lastclipImage !== "undefined") {
 				if (lastclipImage.toDataURL() !== clip.toDataURL()) {
-					//console.log("Found new clip that is an image");
 
 					var dimensions = sizeOf(clip.toPNG());
-					//console.log(dimensions);
 					ipc.send("picture", "1");
 
 					lastclipImage = clip;
 				}
 			} else {
-				//console.log("Clipboard is FIRST image!");
 
 				ipc.send("picture", "1");
-				//console.log("Sending picture");
 
-				//$('#imagesList').append('<li><img src="' + clip + '" /></li>');
 				lastclipImage = clip;
 			}
 		}
@@ -544,44 +532,42 @@ function syncToFirebase(syncData, entries)
 {
 	for(var i=0; i< syncData.length; i++)
 	{
-		//console.log("sync found");
 		canUpdateDate = false;
 		var found = false;
 		for (var j=0; j< entries.length;j++)
 		{
 			if(syncData[i].value == entries[j].kleep)
 			{
-				//console.log(syncData[i].value + " already synced");
+				console.log(syncData[i].value + " already synced");
 				found = true
 			}
+			
+			
 
 		}
 
 		if(found)
 		{
+			console.log("deleting..." +syncData[i].value)
 			syncData.splice(i,1)
-			//console.log("deleting...")
 		}
 		else
 		{
-			//console.log("need to add "+ syncData[i].value)
+			console.log("need to add "+ syncData[i].value)
 			var argsSync = [syncData[i].folder, syncData[i].value, syncData[i].color, syncData[i].action, syncData[i].group];
 					ipc.send("newclip", argsSync);
 					
-			//console.log(argsSync)		
 		}
 	}
 
 }
 //get the table from firebase
 ipc.on("table", function(event, arg) {
-	console.log("table")
+	console.log(syncData)
 	var entries = Object.values(arg);
 
-	//console.log("NOT syncing")
-	//console.log(syncData);
+
 	syncToFirebase(syncData, entries);
-	//console.log(entries);
 	//start from bottom
 
 	data = [];
@@ -606,7 +592,6 @@ ipc.on("table", function(event, arg) {
 			});
 		}
 	}
-	//console.log(data)
 	generateData();
 });
 
@@ -614,10 +599,8 @@ ipc.on("table", function(event, arg) {
 ipc.on("tablesync", function(event, arg) {
 	var entries = Object.values(arg);
 
-	//console.log("syncing");
 	syncToFirebase(syncData, entries);
-	//console.log(entries);
-	//start from bottom
+	
 
 	
 });
@@ -663,7 +646,6 @@ ipc.on("recieveImages", function(event, arg) {
 
 			if (item[4] == 0) {
 				var dimensions = await ImagesActions.getImageDimensions(newDataURI);
-				//ipc.send("storeImageDimensions",dimensions.w, dimensions.h, item[1]);
 			} else {
 				var dimensions = { w: item[3], h: item[4] };
 			}
@@ -690,7 +672,6 @@ ipc.on("recieveImages", function(event, arg) {
 			}
 		}
 		$(".loader").remove();
-		//console.log(images);
 		generateImages();
 	}
 });
@@ -727,8 +708,7 @@ ipc.on("update-available", function(event, arg) {
 	let response = dialog.showMessageBox(options);
 });
 
-//AKIA5643XVMRBWDJAHRA
-//oN/wIFQRwH/8M1VKn+OcAf5TFsOOV/bje5lgRL9u
+
 
 ////////////////////////////////////////
 ////////////////////////////////////////

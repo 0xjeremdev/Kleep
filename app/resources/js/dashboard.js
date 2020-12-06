@@ -68,12 +68,12 @@ module.exports = {
           x=pass
         });
         
-        console.log(x)
+       
         const container = document.querySelector('#list-scrollbar');
         container.scrollTop = 0;
           //ipc.send("setDisconnect","");
         ipc.send("firestoreStore",clipboard.readText());
-        console.log(clipboard.readText())
+        
       
           $("#datepicker-trigger").datepicker("setDate", new Date());
           //$("#pickMonth").text(moment.format("MMMM"))

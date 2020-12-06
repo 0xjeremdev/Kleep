@@ -662,10 +662,10 @@ height: auto;
   display: block;
 }
 .Main .main-content .contents .list .item .divider {
-  width: 1px;
-  height: 35px;
+  width: 3px;
+  height: 40px;
   margin: 0 15px 0;
-  background-color: #333333;
+  
   opacity: 0.2;
 }
 .Main .main-content .contents .list .item .details .CircularCheckbox label {
@@ -1151,6 +1151,10 @@ height: auto;
 
 .color-yellow {
   background-color: #fcee21;
+}
+
+.white{
+  background-color: #333333;
 }
 
 

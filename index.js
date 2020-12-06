@@ -485,10 +485,7 @@ const mainTemplate = [
 	}
 ];
 
-//if mac add empty object to menu
-//if (process.platform == 'darwin') {
-//mainTemplate.unshift({});
-//}
+
 
 ipc.on("changeMenu", function(event, arg) {
 	try{
@@ -521,11 +518,10 @@ ipc.on("createWindow", function(event, arg) {
 //
 //FIREBASE
 //
-//const {Firestore} = require('@google-cloud/firestore');
 var firebase = require("firebase");
 require("firebase/firestore");
 
-var firebaseConfig = {
+/*var firebaseConfig = {
 	apiKey: "AIzaSyC2gjoCBBXFcE8U-Rm3fBbGcQIW6ZMcR9Y",
 	authDomain: "kleep-86262.firebaseapp.com",
 	databaseURL: "https://kleep-86262.firebaseio.com",
@@ -535,6 +531,17 @@ var firebaseConfig = {
 	appId: "1:1004954643955:web:a4701d5702593279bbf686",
 	measurementId: "G-018C9JYCZL"
 };
+*/
+
+var firebaseConfig = {
+    apiKey: "AIzaSyC98dymacpS0LUoB7BKyUMSwu7eOe6cKL0",
+    authDomain: "uihelp-7f36c.firebaseapp.com",
+    databaseURL: "https://uihelp-7f36c-default-rtdb.firebaseio.com",
+    projectId: "uihelp-7f36c",
+    storageBucket: "uihelp-7f36c.appspot.com",
+    messagingSenderId: "696335520283",
+    appId: "1:696335520283:web:5637fcdc19646954591ebe"
+  };
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
@@ -577,8 +584,12 @@ ipc.on("signup", function(event, args) {
 				count:2
 			});
 			firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Main").add({kleep:"Welcome to Kleep!"});
-			//firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection("Images").add({init:"init"});
 			
+			firebase.auth().currentUser.sendEmailVerification().then(function() {
+				console.log("!!!!!!!!!!!!!!!!SEEEEEEEENT!!!!!!!!!!!!")
+			  }).catch(function(error) {
+				console.log(error)
+			  });
 				
 		})
 		/*
@@ -599,15 +610,15 @@ ipc.on("signin", function(event, args) {
 		.auth()
 		.signInWithEmailAndPassword(args[0], args[1])
 		.then(function() {
-			console.log(firebase.auth().currentUser.uid);
+			//console.log(firebase.auth().currentUser.uid);
 			setTimeout(() => { 
-				//var dbref = database.ref();
+				
 				firestore.collection(firebase.auth().currentUser.uid).doc("Profile").get().then(function(doc){
-					console.log(doc)
+					//console.log(doc)
 					var data = doc.data();
-					console.log(data)
+					//console.log(data)
 					var paid = data.paid;
-					console.log(paid)
+					//console.log(paid)
 					if(paid=="Yes")
 					{
 						if(mainWindow)
@@ -644,17 +655,7 @@ ipc.on("signin", function(event, args) {
 		});
 })
 
-ipc.on("googleSignup",function(event){
-	var provider = new firebase.auth.GoogleAuthProvider();
-	provider.addScope('profile');
-	provider.addScope('email');
-	firebase.auth().signInWithPopup(provider).then(function(result) {
-	// This gives you a Google Access Token.
-	var token = result.credential.accessToken;
-	// The signed-in user info.
-	var user = result.user;
-	});
-})
+
 
 ipc.on("needuser", function(event) {
 	try{
@@ -818,7 +819,7 @@ ipc.on("newclip", function(event, args) {
 		let found = 0;
 
 		var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(args[0]) 
-		console.log(Buffer.byteLength(args[1], 'utf8') + " bytes")
+		//console.log(Buffer.byteLength(args[1], 'utf8') + " bytes")
 		if(Buffer.byteLength(args[1], 'utf8')<1500)
 		{
 			fref.where("kleep","==",args[1]).get().then(function(querySnapshot) {
@@ -835,7 +836,7 @@ ipc.on("newclip", function(event, args) {
 				else{
 					querySnapshot.forEach(function(doc) {
 						// doc.data() is never undefined for query doc snapshots
-						console.log(doc.id, " => ", doc.data());
+						//console.log(doc.id, " => ", doc.data());
 						if(args[3]=="create")
 					{
 						fref.doc(doc.id).update({
@@ -861,7 +862,7 @@ ipc.on("newclip", function(event, args) {
 			var foundkleep = false;
 			fref.where("bytesize",">",1499).get().then(function(querySnapshot) {
 
-					console.log("TRYING THE BIG BOYS")
+					//console.log("TRYING THE BIG BOYS")
 					querySnapshot.forEach(function(doc) {
 						// doc.data() is never undefined for query doc snapshots
 
@@ -905,7 +906,6 @@ ipc.on("newclip", function(event, args) {
 				}
 			})
 		}
-		//get a reference to the user folder's cliphistory, specifically to see if the new clip is in there
 
 		}
 		catch(error){
@@ -979,8 +979,7 @@ var fileref = database.ref();
 let unsubscribe;
 //the renderer process is asking for the table
 ipc.on("gettable", function(event, fname, timeselected, isgroup, sync) {
-	console.log("GETTABLE")
-	//event.sender.send("print", "got this from gettable " + fname + timeselected);
+	//console.log("GETTABLE")
 	try
 	{
 		//reset the db ref
@@ -1104,7 +1103,7 @@ ipc.on("deleteClip", function(event, args) {
 			
 				querySnapshot.forEach(function(doc) {
 					// doc.data() is never undefined for query doc snapshots
-					console.log(doc.id, " => ", doc.data());
+					//console.log(doc.id, " => ", doc.data());
 					
 					fref.doc(doc.id).delete()
 				
@@ -1125,9 +1124,7 @@ ipc.on("deleteClip", function(event, args) {
 
 ipc.on("deleteFolder", function(event, arg) {
 
-		//var fref =firestore.collection(firebase.auth().currentUser.uid).doc("Folders").collection(name) 
 		
-		//fref.delete()
 
 		
 	try{
@@ -1242,7 +1239,6 @@ ipc.on("picture", function(event, arg) {
 		try {
 			var clip = clipboard.readImage();
 			dimensions = sizeOf(clip.toPNG());
-			//event.sender.send("print1","dimension w" + typeof dimensions);
 		} catch (error) {
 			event.sender.send("printerror", error);
 		}
@@ -1466,7 +1462,7 @@ function checkConnection() {
 
 var lastclip;
 setInterval(function() {
-	console.log("IN")
+	console.log(firebase.auth().currentUser.emailVerified)
 	//here we sync
 	if (firebase.auth().currentUser && mainWindow==null)
 	{
@@ -1505,7 +1501,7 @@ setInterval(function() {
 						else{
 							querySnapshot.forEach(function(doc) {
 								// doc.data() is never undefined for query doc snapshots
-								console.log(doc.id, " => ", doc.data());
+								//console.log(doc.id, " => ", doc.data());
 								
 							
 								frefsync.doc(doc.id).update({
