@@ -521,17 +521,7 @@ ipc.on("createWindow", function(event, arg) {
 var firebase = require("firebase");
 require("firebase/firestore");
 
-/*var firebaseConfig = {
-	apiKey: "AIzaSyC2gjoCBBXFcE8U-Rm3fBbGcQIW6ZMcR9Y",
-	authDomain: "kleep-86262.firebaseapp.com",
-	databaseURL: "https://kleep-86262.firebaseio.com",
-	projectId: "kleep-86262",
-	storageBucket: "kleep-86262.appspot.com",
-	messagingSenderId: "1004954643955",
-	appId: "1:1004954643955:web:a4701d5702593279bbf686",
-	measurementId: "G-018C9JYCZL"
-};
-*/
+
 
 var firebaseConfig = {
     apiKey: "AIzaSyC98dymacpS0LUoB7BKyUMSwu7eOe6cKL0",
