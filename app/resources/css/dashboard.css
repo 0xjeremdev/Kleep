@@ -631,7 +631,7 @@ body {
 	border-radius: 10px;
 	border: 1px solid #e6e6e6;
 	position: relative;
-	height: 337px;
+	min-height: 337px;
 }
 .Main .main-content .contents .list .item {
 	display: flex;
