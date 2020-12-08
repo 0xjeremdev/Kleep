@@ -542,6 +542,7 @@ body {
 	padding-top: 5px;
 	position: relative;
 	height: 220px;
+	overflow: visible !important;
 }
 
 .Main .main-content .folders .list .item {
@@ -907,6 +908,7 @@ body {
 	flex-direction: row;
 	text-decoration: none;
 	color: #333333;
+	width: 120px;
 }
 
 .cloneable {
