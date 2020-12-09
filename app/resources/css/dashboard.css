@@ -500,6 +500,7 @@ body {
 	padding: 15px;
 	background-color: #fff;
 	border-radius: 10px;
+	overflow: hidden;
 	border: 1px solid #e6e6e6;
 }
 .Main .main-content .folders .btn-new-folder {
@@ -549,7 +550,7 @@ body {
 	padding-top: 5px;
 	position: relative;
 	height: 220px;
-	overflow: visible !important;
+	/* overflow: visible !important; */
 }
 
 .Main .main-content .folders .list .item {
