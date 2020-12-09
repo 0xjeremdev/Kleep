@@ -918,7 +918,7 @@ body {
 }
 
 .modal {
-	width: 300px;
+	width: 600px;
 	padding-left: 25px;
 	padding-right: 25px;
 	background-color: #f4f8ff;
@@ -1020,32 +1020,54 @@ body {
 	opacity: 0.7;
 }
 
-#modal-fullclip .message {
+#modal-fullclip .message-box {
 	padding: 15px 20px;
 	background-color: #fff;
 	border-radius: 10px;
 	border: 1px solid #e6e6e6;
 	position: relative;
-	height: 337px;
-	word-wrap: break-word;
+	height: 150px;
+	overflow: auto;
 }
-
+#modal-fullclip .message-box::before {
+	width: 60px;
+	height: 3px;
+	top: 8px;
+	border-radius: 2px;
+	content: " ";
+	background: #65bb38;
+	position: absolute;
+}
+#modal-fullclip .message-box div {
+	height: 100%;
+	overflow: auto;
+}
+#modal-fullclip .message-box .message {
+	font-style: italic;
+}
+#modal-fullclip .annotation-box {
+	padding: 15px 20px;
+	background-color: #fff;
+	border-radius: 10px;
+	border: 1px solid #e6e6e6;
+	position: relative;
+	margin-top: 10px;
+}
+#modal-fullclip .annotation-box input {
+	border: none;
+	outline: 0;
+	font-family: "Proxima Nova";
+	font-size: 14px;
+	font-weight: 400;
+}
 #modal-fullclip .actions {
 	display: flex;
 	justify-content: stretch;
 	align-items: center;
 	flex-direction: row;
+	margin-top: 10px;
 }
-#modal-fullclip .actions input {
-	padding: 4px;
-	border-radius: 5px;
-	outline: 0;
-	border: 1px solid #e6e6e6;
-	flex: 1;
-	font-family: "Proxima Nova";
-	font-size: 14px;
-	font-weight: 400;
-}
+
 #modal-fullclip .actions .btn-copy-annot {
 	font-family: "Proxima Nova";
 	font-size: 15px;
@@ -1061,11 +1083,28 @@ body {
 	text-align: center;
 	text-decoration: none;
 	height: auto;
-	margin-left: 8px;
+	margin-right: auto;
 	width: 80px;
 	align-self: stretch;
 }
-
+#modal-fullclip .actions .btn-tags {
+	font-family: "Proxima Nova";
+	font-size: 13px;
+	font-weight: 400;
+	padding: 3px 12px;
+	color: black;
+	background-color: #e49928;
+	border-radius: 4px;
+	border: 0;
+	outline: 0;
+	cursor: pointer;
+	transition: 150ms;
+	text-align: center;
+	text-decoration: none;
+	height: auto;
+	align-items: center;
+	margin-left: 3px;
+}
 #modal-fullclip .actions .btn-annotate {
 	font-family: "Proxima Nova";
 	font-size: 15px;
@@ -1088,6 +1127,77 @@ body {
 #modal-fullclip .actions .btn-create:hover {
 	transition: 150ms;
 	opacity: 0.7;
+}
+#modal-fullclip .footer-box {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 25px;
+}
+#modal-fullclip .footer-box .btn-remove {
+	border: 0;
+	border-radius: 5px;
+	margin-left: 5px;
+	font-family: "Proxima Nova";
+	font-size: 15px;
+	font-weight: 400;
+	padding: 4px 10px;
+	color: #333333;
+	background-color: #f9c546;
+	border-radius: 4px;
+	border: 0;
+	outline: 0;
+	cursor: pointer;
+	transition: 150ms;
+	text-align: center;
+	text-decoration: none;
+}
+#modal-fullclip .footer-box .colors {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: row;
+	transition: 150ms;
+	cursor: pointer;
+}
+#modal-fullclip .footer-box .colors div {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: row;
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	margin: 0 5px 0;
+}
+#modal-fullclip .footer-box .colors div img {
+	display: none;
+}
+#modal-fullclip .footer-box .colors div.selected {
+	border: 2px solid #5d6d7e;
+	transition: 150ms;
+}
+#modal-fullclip .footer-box .colors div.selected img {
+	display: block;
+}
+#modal-fullclip .footer-box .colors div.green {
+	background-color: #39b54a;
+}
+#modal-fullclip .footer-box .colors div.violet {
+	background-color: #662d92;
+}
+#modal-fullclip .footer-box .colors div.blue {
+	background-color: #29abe2;
+}
+#modal-fullclip .footer-box .colors div.red {
+	background-color: #ff0000;
+}
+#modal-fullclip .footer-box .colors div.yellow {
+	background-color: #fcee21;
+}
+#modal-fullclip .footer-box .colors div:not(.selected):hover {
+	transition: 150ms;
+	opacity: 0.4;
 }
 
 #modal-color-selection {

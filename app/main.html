@@ -423,15 +423,55 @@
 
 			<div id="modal-fullclip" class="modal">
 				
-				<p class="message">test</p>
-			
-				<div class="actions">
+				<div class="message-box">
+					<div>
+						<p class="message">test</p>
+					</div>
+				</div>
+				<div class="annotation-box">
 					<input type="text" placeholder="annotation" id="annotation"/>
-					<a class="btn-annotate" href="#" rel="modal:close">Annotate</a>
+				</div>
+				<div class="actions">
+					<!-- <a class="btn-annotate" href="#" rel="modal:close">Annotate</a> -->
 					<a class="btn-copy-annot" rel="modal:close">Copy</a>
-					
+					<a class="btn-tags">+</a>
+					<a class="btn-tags">Tags</a>
+					<a class="btn-tags">Tags</a>
+					<a class="btn-tags">Tags</a>
 					<!--<button class="btn-create">Create</button>-->
 				</div>
+				<div class="footer-box">
+					<div class="colors">
+						<div value="color-green" class="green">
+							<img src="resources/assets/icons/check-white.svg" />
+						</div>
+						<div value="color-violet" class="violet">
+							<img src="resources/assets/icons/check-white.svg" />
+						</div>
+						<div value="color-blue" class="blue">
+							<img src="resources/assets/icons/check-white.svg" />
+						</div>
+						<div value="color-red" class="red">
+							<img src="resources/assets/icons/check-white.svg" />
+						</div>
+						<div value="color-yellow" class="yellow">
+							<img src="resources/assets/icons/check-white.svg" />
+						</div>
+					</div>
+					<a
+						class="btn-remove"
+						href="#modal-delete-confirmation"
+						rel="modal:open"
+						value="delete-button"
+					>
+						<img
+							src="resources/assets/icons/trash-white.svg"
+							height="12"
+							width="12"
+						/>
+					</a>
+				</div>
+				
 			</div>
 
 			<div id="modal-image" class="modal">
