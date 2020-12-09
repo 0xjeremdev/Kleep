@@ -365,6 +365,10 @@ body {
 	align-items: flex-end;
 	flex-direction: row;
 }
+.Main .header .configuration .center-box {
+	display: flex;
+	align-items: flex-end;
+}
 .Main .header .configuration #search {
 	width: 130px;
 	padding: 4px 10px;

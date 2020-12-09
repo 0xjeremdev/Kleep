@@ -170,37 +170,38 @@
 
 					<!-- Search Input -->
 					<input type="text" id="search" placeholder="Search" />
+					<div class="center-box">
+						<div class="center">
+							<!-- Switch -->
+							<div class="switch-container">
+								<span class="switch-value">on</span>
+								<label class="SwitchReverse">
+									<input type="checkbox" id="kleeptoggle" />
+									<span class="slider round"></span>
+								</label>
+								<span class="switch-value">off</span>
+							</div>
 
-					<div class="center">
-						<!-- Switch -->
-						<div class="switch-container">
-							<span class="switch-value">on</span>
-							<label class="SwitchReverse">
-								<input type="checkbox" id="kleeptoggle" />
-								<span class="slider round"></span>
-							</label>
-							<span class="switch-value">off</span>
+							<!-- Title -->
+							<!-- <span class="kleeboard">Kleepboard</span> -->
+
+							<div class="date-container">
+								<!-- Date -->
+								<span class="date" id="datepicker-trigger" data-toggle="datepicker">
+									<span class="date-text month" id="pickMonth"></span>
+									<span class="date-text day" id ="pickDay"></span>
+									<span class="date-text year" id="pickYear"></span>
+
+									<img
+										class="arrow-icon"
+										src="resources/assets/icons/arrow-down.svg"
+									/>
+								</span>
+								
+							</div>
 						</div>
-
-						<!-- Title -->
-						<!-- <span class="kleeboard">Kleepboard</span> -->
-
-						<div class="date-container">
-							<!-- Date -->
-							<span class="date" id="datepicker-trigger" data-toggle="datepicker">
-								<span class="date-text month" id="pickMonth"></span>
-								<span class="date-text day" id ="pickDay"></span>
-								<span class="date-text year" id="pickYear"></span>
-
-								<img
-									class="arrow-icon"
-									src="resources/assets/icons/arrow-down.svg"
-								/>
-							</span>
-							
-						</div>
+						<button class="btn-today" id="btnToday">Today</button>
 					</div>
-					<button class="btn-today" id="btnToday">Today</button>
 					<!-- Column: User Configuration -->
 					<div class="user">
 						
