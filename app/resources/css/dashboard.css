@@ -345,7 +345,7 @@ body {
 .Main .header {
 	width: 100%;
 	display: grid;
-	grid-template-columns: 0.3fr 0.7fr;
+	grid-template-columns: 230px auto;
 	column-gap: 40px;
 }
 .Main .header .logo {
@@ -356,7 +356,8 @@ body {
 	flex-direction: row;
 }
 .Main .header .logo img {
-	height: 50px;
+	/* height: 50px; */
+	width: 100%;
 }
 .Main .header .configuration {
 	display: flex;
@@ -487,7 +488,7 @@ body {
 .Main .main-content {
 	margin-top: 15px;
 	display: grid;
-	grid-template-columns: 0.3fr 0.7fr;
+	grid-template-columns: 230px auto;
 	column-gap: 40px;
 }
 .Main .main-content .folders .wrapper {
@@ -511,9 +512,8 @@ body {
 	text-align: center;
 	text-decoration: none;
 	display: block;
-	border-radius: 0;
-	border-top-right-radius: 12px;
-	border-bottom-left-radius: 12px;
+	border-radius: 5px;
+	margin-bottom: 10px;
 }
 .Main .main-content .folders .btn-new-folder:hover {
 	transition: 150ms;
@@ -631,7 +631,7 @@ body {
 	border-radius: 10px;
 	border: 1px solid #e6e6e6;
 	position: relative;
-	min-height: 337px;
+	height: calc(100vh - 200px);
 }
 .Main .main-content .contents .list .item {
 	display: flex;

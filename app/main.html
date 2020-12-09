@@ -219,12 +219,13 @@
 			<div class="main-content">
 				<!-- Folders -->
 				<div class="folders">
+					<a class="btn-new-folder" href="#modal-new-folder" rel="modal:open"
+						>+ New Folder
+					</a>
 					<div class="wrapper"> 
 						<!-- New Folder -->
 						<!-- href targets the New Folder Modal by supplying the modal's id -->
-						<a class="btn-new-folder" href="#modal-new-folder" rel="modal:open"
-							>+ New Folder
-						</a>
+						
 
 						<!-- List of Folders -->
 						<div class="list" id = "folder-list">
@@ -281,14 +282,14 @@
 					<div class="list" id="list-scrollbar"></div> 
 
 					<!-- Folder Contents Bulk Actions -->
-					<ul class="dropdown-menu" id="content-bulk-actions">
+					<ul class="dropdown-menu" id="content-bulk-actions" >
 						<li>
 							<a class="button has-arrow" href="javascript:void(0)">
 								Bulk Actions
 							</a>
 
 							<!-- Menu -->
-							<ul class="dropdown-panel">
+							<ul class="dropdown-panel" style="margin-top: -178px;">
 								<li>
 									<a
 										class="modal-button"
