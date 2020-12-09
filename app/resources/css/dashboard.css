@@ -500,7 +500,7 @@ body {
 	padding: 15px;
 	background-color: #fff;
 	border-radius: 10px;
-	overflow: hidden;
+	overflow: auto;
 	border: 1px solid #e6e6e6;
 }
 .Main .main-content .folders .btn-new-folder {
@@ -548,9 +548,8 @@ body {
 .Main .main-content .folders .list {
 	cursor: pointer;
 	padding-top: 5px;
-	position: relative;
 	height: 220px;
-	/* overflow: visible !important; */
+	overflow: visible !important;
 }
 
 .Main .main-content .folders .list .item {
@@ -697,7 +696,6 @@ body {
 	flex-direction: row;
 	margin-left: auto;
 	flex-shrink: 0;
-	position: relative;
 }
 .Main .main-content .contents .list .item .action-buttons .btn-copy {
 	border: 0;
