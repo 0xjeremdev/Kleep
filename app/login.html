@@ -3,8 +3,10 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>Kleep - Login</title>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
-
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"
+		/>
 
 		<!-- Custom CSS -->
 		<link rel="stylesheet" href="./resources/css/normalize.css" />
@@ -17,70 +19,83 @@
 			<div class="Box">
 				<!-- Logo -->
 				<img class="logo" src="resources/assets/images/logo.png" />
-
+				<p class="description text-gray">
+					Copy paste, but better.
+				</p>
 				<!-- Header -->
-				<h3 class="header text-blue">Welcome!</h3>
+				<!-- <h3 class="header text-blue">Welcome!</h3> -->
 
 				<!-- Description -->
-				<p class="description">
+				<!-- <p class="description">
 					Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
 					nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
 					volutpat. Ut wisi enim ad minim veniam, quis nos
-				</p>
-
+				</p> -->
+				<h3 class="header text-black">Sign In</h3>
 				<!-- Form and Buttons -->
 				<div class="form">
 					<!-- Email -->
 					<input type="email" class="input" id="email" placeholder="Email ID" />
 
-					<div class=container>
+					<div class="container">
 						<!-- Password -->
 						<input
 							type="password"
 							class="input"
 							id="password"
 							placeholder="Password"
-						/> 
-						<i class="far fa-eye" id="togglePassword"></i>
+						/>
+						<!-- <i class="far fa-eye" id="togglePassword"></i> -->
 					</div>
 					<!-- Submit / Login button -->
-					<button class="btn-submit bg-blue" id="login">Log In</button>
-					
-				</div>
+					<div class="details">
+						<!-- Keep me Signed In -->
+						<div class="Checkbox">
+							<label>
+								<input type="checkbox" id="remember-pass" />
+								<span></span>
+								Remember Password
+							</label>
+						</div>
 
-				<div class="details">
-					<!-- Keep me Signed In -->
-					<div class="Checkbox">
-						<label>
-							<input type="checkbox" id="remember-pass" />
-							<span></span>
-							Remember Password
-						</label>
+						<!-- Forgot Password -->
+						<a
+							class="link text-blue"
+							href="javascript:void(0)"
+							id="forgotPassword"
+						>
+							Forgot Password?
+						</a>
 					</div>
-
-					<!-- Forgot Password -->
-					<a class="link text-blue" href="javascript:void(0)" id="forgotPassword">
-						Forgot Password?
-					</a>
+					<button class="btn-submit bg-blue" id="login">Log In</button>
 				</div>
 
 				<!-- Not a Member -->
-				<div class="not-a-member-container">
-					
-					<button class="btn-signup bg-blue" id="signup">Signup</button>
-		
+				<div class="external-signin-text">
+					<p>- OR -</p>
+					<p>sign in with</p>
 				</div>
+				<div class="social-login">
+					<div class="social-icon">
+						<img src="resources/assets/images/google.png" />
+					</div>
+					<div class="social-icon">
+						<img src="resources/assets/images/facebook.png" />
+					</div>
+				</div>
+				<p class="footer-text">Don't have an account? <a>Sign Up</a></p>
 			</div>
 			<!-- /Container -->
 		</div>
 
 		<!-- Vendor JS -->
-		<script >window.$ = window.jQuery =require("./resources/js/jquery.min.js");</script>
+		<script>
+			window.$ = window.jQuery = require("./resources/js/jquery.min.js");
+		</script>
 
 		<script src="./resources/js/jquery.min.js"></script>
 
 		<!-- Custom JS -->
 		<script src="./resources/js/login.js"></script>
-		
 	</body>
 </html>
