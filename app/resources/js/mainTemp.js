@@ -42,20 +42,37 @@ let images = [];
 let fdata = [];
 let shortenedClips = {};
 let annotations = {};
-let syncData= [];
+let syncData = [];
 
-let {remote} = require('electron');
-let path = require('path');
+let { remote } = require("electron");
+let path = require("path");
 const { settings } = require("cluster");
 
 let appPath = remote.app.getAppPath();
-const DashboardActions = require(path.resolve(appPath, 'app/resources/js/dashboard.js'));
-const FoldersActions = require(path.resolve(appPath, 'app/resources/js/folders.js'));
-const ModalActions = require(path.resolve(appPath, 'app/resources/js/modals.js'));
-const ImagesActions = require(path.resolve(appPath, 'app/resources/js/images.js'));
-const KleepActions = require(path.resolve(appPath, 'app/resources/js/kleeps.js'));
-const HelperActions = require(path.resolve(appPath, 'app/resources/js/helper.js'));
-
+const DashboardActions = require(path.resolve(
+	appPath,
+	"app/resources/js/dashboard.js"
+));
+const FoldersActions = require(path.resolve(
+	appPath,
+	"app/resources/js/folders.js"
+));
+const ModalActions = require(path.resolve(
+	appPath,
+	"app/resources/js/modals.js"
+));
+const ImagesActions = require(path.resolve(
+	appPath,
+	"app/resources/js/images.js"
+));
+const KleepActions = require(path.resolve(
+	appPath,
+	"app/resources/js/kleeps.js"
+));
+const HelperActions = require(path.resolve(
+	appPath,
+	"app/resources/js/helper.js"
+));
 
 /**
  * For redirecting to a page. Uses `page` object
@@ -71,10 +88,10 @@ function redirect(page) {
  * @param {string} element
  */
 function initializeMetisMenu(element) {
-	
 	const mm = new MetisMenu(element).on("shown.metisMenu", function(event) {
 		window.addEventListener("click", function mmClick(e) {
 			if (!event.target.contains(e.target)) {
+				console.log(mm, "clicked");
 				mm.hide(event.detail.shownElement);
 				window.removeEventListener("click", mmClick);
 			}
@@ -87,87 +104,69 @@ const inactiveImageSrc = "resources/assets/icons/folder-gray.svg";
 const container = $(".main-content .contents");
 const foldersList = $(".main-content .folders");
 
-
-$(document).ready()
+$(document).ready();
 {
-
-  
 	// Initialize scrollbar
 	new PerfectScrollbar("#list-scrollbar", { wheelPropagation: false });
 	new PerfectScrollbar("#folder-list", { wheelPropagation: false });
 
 	//finish load asks for the folders
 	ipc.send("finishload");
-  ipc.send("changeMenu");
-  ipc.send("getSettings", "");
+	ipc.send("changeMenu");
+	ipc.send("getSettings", "");
 	timeglobal = 0;
 
 	//need to get user settings
 
-
-  DashboardActions.initializeCheckbox();
-  DashboardActions.initializeTodayBtn();
+	DashboardActions.initializeCheckbox();
+	DashboardActions.initializeTodayBtn();
 
 	FoldersActions.initializeMainAsActive();
-
-	
-
-	
 
 	// Initialize dropdown menu for Bulk Actions
 	//initializeMetisMenu("#folder-bulk-actions");
 	initializeMetisMenu("#content-bulk-actions");
 
-  // Event listener for Copy button
-  DashboardActions.initializeCopyBtn();
-	
+	// Event listener for Copy button
+	DashboardActions.initializeCopyBtn();
 
 	FoldersActions.initializeFolderDeleteBtn();
 
- DashboardActions.initializeRemoveBtn();
+	DashboardActions.initializeRemoveBtn();
 
- DashboardActions.initializeBulkCopyBtn();
+	DashboardActions.initializeBulkCopyBtn();
 
+	FoldersActions.initializeFolderCreateBtn();
 
- FoldersActions.initializeFolderCreateBtn();
- 
- 
+	DashboardActions.initializeSearchBar();
+	DashboardActions.initializeDatepicker();
 
-  DashboardActions.initializeSearchBar()
-  DashboardActions.initializeDatepicker()
-
-
-  ModalActions.ColorSelectionModal();
+	ModalActions.ColorSelectionModal();
 	ModalActions.DeleteModal();
-  ModalActions.MoveModal();
-  KleepActions.openAnnotationListener();
-  KleepActions.annotateKleepListener();
-  
+	ModalActions.MoveModal();
+	KleepActions.openAnnotationListener();
+	KleepActions.annotateKleepListener();
 }
 
 // Main
 function initializeMain() {
-  getTable();
+	getTable();
 	generateData();
-  generateFolders();
-  HelperActions.initializeCheckConnection()
-  DashboardActions.initializeOtherWindowsBtns();
-
+	generateFolders();
+	HelperActions.initializeCheckConnection();
+	DashboardActions.initializeOtherWindowsBtns();
 }
 
 ////////////////////////////////////////////////
 //////////////////GENERATORS////////////////////
 ////////////////////////////////////////////////
 
-
-
-
 // Add dynamic items in Folder Contents in main.html
 const generateData = function(query = "") {
 	// Initial date number
-	
+
 	const startDate = 10;
-	
+
 	// Get cloneable row
 	const item = $(".Main .cloneable");
 
@@ -175,22 +174,20 @@ const generateData = function(query = "") {
 	container.find("#list-scrollbar").empty();
 
 	// If query is supplied, filter the list
-	data.forEach(({ day, month, description, color,annotation }, index) => {
+	data.forEach(({ day, month, description, color, annotation }, index) => {
 		// Filter: Include content if there is supplied query text
 		// and supplied text is substring of content description
-		if (query.length > 0 && !description.toLowerCase().includes(query.toLowerCase())) {
-			
-			if(annotation)
-			{
-				if(!annotation.toLowerCase().includes(query.toLowerCase())){
+		if (
+			query.length > 0 &&
+			!description.toLowerCase().includes(query.toLowerCase())
+		) {
+			if (annotation) {
+				if (!annotation.toLowerCase().includes(query.toLowerCase())) {
 					return;
 				}
-			}
-			else{
+			} else {
 				return;
 			}
-			
-			
 		}
 
 		// Generate id for dropdown and checkbox
@@ -199,8 +196,7 @@ const generateData = function(query = "") {
 
 		// Clone the cloneable row
 		const newItem = item.clone();
-    
-		
+
 		if (
 			color == "color-yellow" ||
 			color == "color-red" ||
@@ -209,7 +205,10 @@ const generateData = function(query = "") {
 			color == "color-green" ||
 			color == "white"
 		) {
-			newItem.find(".divider").removeClass().addClass("divider " + color)
+			newItem
+				.find(".divider")
+				.removeClass()
+				.addClass("divider " + color);
 			//newItem.removeClass().addClass("item " + color);
 		}
 
@@ -247,18 +246,13 @@ const generateData = function(query = "") {
 		container.find(".list").append(newItem);
 
 		// Initialize the dropdown menu (important)
-	
-		
-		initializeMetisMenu(`#${dropdownId}`);
-		
 
-		
+		initializeMetisMenu(`#${dropdownId}`);
 	});
 };
 
 const generateFolders = function(query = "") {
-
-  // Get cloneable row
+	// Get cloneable row
 	const item = $(".folderclone .cloneable");
 
 	var currActive = foldersList.find(".item active").attr("id");
@@ -266,10 +260,9 @@ const generateFolders = function(query = "") {
 	// Remove items in Folder Contents list
 	foldersList.find(".list").empty();
 
-	
 	fdata.forEach(({ name }, index) => {
 		// Generate id for dropdown and checkbox
-		
+
 		const FolderdropdownId = `more-actions-${name}`;
 		// Clone the cloneable row
 		const newItem = item.clone();
@@ -294,17 +287,17 @@ const generateFolders = function(query = "") {
 				'<img src="resources/assets/icons/folder-gray.svg" width="25" height="25">' +
 					name
 			);
-		
-		
+
 		// Append / Add the item in list
 		foldersList.find(".list").append(newItem);
 
 		newItem.find(".dropdown-menu").attr("id", FolderdropdownId);
-		
+
 		initializeMetisMenu(`#${FolderdropdownId}`);
-		
-  });
-  
+	});
+	$(".main-content folders wrapper").scroll(function() {
+		console.log("asdf");
+	});
 	FoldersActions.setFolderListener();
 };
 
@@ -345,7 +338,7 @@ const generateImages = function(query = "") {
 			newItem.find(".date .day-number").text(day);
 			newItem.find(".title .image").attr("src", image);
 			newItem.find(".title").attr("id", key);
-			
+
 			// Change dropdown id
 			// newItem.find(".dropdown-menu").attr("id", dropdownId);
 			newItem.find(".CircularCheckbox input").attr("id", checkboxId);
@@ -363,22 +356,16 @@ const generateImages = function(query = "") {
 	});
 };
 
-
-
 /////////////////////////////////////////////////////////
 ///FUNC////////////////////
 /////////////////////////////////////////////////////////
 
 function getTable(sync = 0) {
-	
-	
 	if (connected) {
-		
 		if (images.length == 0) {
 			ipc.send("getImages", "x");
 		}
 
-		
 		if (fnameglobal == "Images") {
 			console.log("aaaaaaaaaaaaa");
 
@@ -394,18 +381,14 @@ function getTable(sync = 0) {
 			}
 		} else {
 			$("#list-scrollbar").removeClass("images");
-			ipc.send("gettable", fnameglobal, timeglobal, isGroup,sync);
+			ipc.send("gettable", fnameglobal, timeglobal, isGroup, sync);
 		}
 	}
 }
 
-
-
-
 setInterval(function() {
 	if (canUpdateDate == true) {
 		$("#btnToday").trigger("click");
-		
 	}
 	canUpdateDate = true;
 }, 360000);
@@ -413,10 +396,13 @@ setInterval(function() {
 //constantly send a new clipboard to check if it is in the db
 setInterval(function() {
 	var clip = clipboard.readImage();
-	console.log(connected)
+	console.log(connected);
 
-
-	if (!Object.values(clipboard.availableFormats()).includes("image/png")||(userSettings["defaultToImages"]=="No" && Object.values(clipboard.availableFormats()).includes("text/plain"))) {
+	if (
+		!Object.values(clipboard.availableFormats()).includes("image/png") ||
+		(userSettings["defaultToImages"] == "No" &&
+			Object.values(clipboard.availableFormats()).includes("text/plain"))
+	) {
 		clip = clipboard.readText();
 
 		if (toggleclip == "Checked" && connected) {
@@ -424,7 +410,7 @@ setInterval(function() {
 				if (fnameglobal !== "Images") {
 					args = [fnameglobal, clip, "white", "create", isGroup];
 					ipc.send("newclip", args);
-					
+
 					syncData.push({
 						folder: fnameglobal,
 						value: clip,
@@ -456,11 +442,9 @@ setInterval(function() {
 			}
 		}
 
-		if(!connected && toggleclip == "Checked")
-		{
+		if (!connected && toggleclip == "Checked") {
 			if (lastclip !== clip && clip.length > 0) {
 				if (fnameglobal !== "Images") {
-					
 					syncData.push({
 						folder: fnameglobal,
 						value: clip,
@@ -473,7 +457,6 @@ setInterval(function() {
 					new Audio("resources/assets/audio/click.mpeg").play();
 				}
 				if (userSettings["copyToMain"] == "Yes" && fnameglobal !== "Main") {
-					
 					syncData.push({
 						folder: "Main",
 						value: clip,
@@ -482,8 +465,6 @@ setInterval(function() {
 						group: isGroup
 					});
 				}
-
-				
 			}
 		}
 		lastclip = clip;
@@ -491,14 +472,12 @@ setInterval(function() {
 		if (toggleclip == "Checked" && connected) {
 			if (typeof lastclipImage !== "undefined") {
 				if (lastclipImage.toDataURL() !== clip.toDataURL()) {
-
 					var dimensions = sizeOf(clip.toPNG());
 					ipc.send("picture", "1");
 
 					lastclipImage = clip;
 				}
 			} else {
-
 				ipc.send("picture", "1");
 
 				lastclipImage = clip;
@@ -506,7 +485,6 @@ setInterval(function() {
 		}
 	}
 
-	
 	var midnight = "00:00:00";
 	var now = null;
 
@@ -517,55 +495,43 @@ setInterval(function() {
 	}
 }, 1000);
 
-
-
-
-
 ///////////////////////////
 ///////////////////////////
 ///////IPC LISTENERS///////
 ///////////////////////////
 ///////////////////////////
 
-
-function syncToFirebase(syncData, entries)
-{
-	for(var i=0; i< syncData.length; i++)
-	{
+function syncToFirebase(syncData, entries) {
+	for (var i = 0; i < syncData.length; i++) {
 		canUpdateDate = false;
 		var found = false;
-		for (var j=0; j< entries.length;j++)
-		{
-			if(syncData[i].value == entries[j].kleep)
-			{
+		for (var j = 0; j < entries.length; j++) {
+			if (syncData[i].value == entries[j].kleep) {
 				console.log(syncData[i].value + " already synced");
-				found = true
+				found = true;
 			}
-			
-			
-
 		}
 
-		if(found)
-		{
-			console.log("deleting..." +syncData[i].value)
-			syncData.splice(i,1)
-		}
-		else
-		{
-			console.log("need to add "+ syncData[i].value)
-			var argsSync = [syncData[i].folder, syncData[i].value, syncData[i].color, syncData[i].action, syncData[i].group];
-					ipc.send("newclip", argsSync);
-					
+		if (found) {
+			console.log("deleting..." + syncData[i].value);
+			syncData.splice(i, 1);
+		} else {
+			console.log("need to add " + syncData[i].value);
+			var argsSync = [
+				syncData[i].folder,
+				syncData[i].value,
+				syncData[i].color,
+				syncData[i].action,
+				syncData[i].group
+			];
+			ipc.send("newclip", argsSync);
 		}
 	}
-
 }
 //get the table from firebase
 ipc.on("table", function(event, arg) {
-	console.log(syncData)
+	console.log(syncData);
 	var entries = Object.values(arg);
-
 
 	syncToFirebase(syncData, entries);
 	//start from bottom
@@ -595,18 +561,14 @@ ipc.on("table", function(event, arg) {
 	generateData();
 });
 
-
 ipc.on("tablesync", function(event, arg) {
 	var entries = Object.values(arg);
 
 	syncToFirebase(syncData, entries);
-	
-
-	
 });
 //Gets the files
 ipc.on("newfile", function(event, arg) {
-	console.log(arg.folders)
+	console.log(arg.folders);
 	var fnames = arg.folders;
 
 	fdata = [];
@@ -621,14 +583,12 @@ ipc.on("newfile", function(event, arg) {
 ipc.on("returnSettings", function(event, arg) {
 	getTable();
 	userSettings = arg;
-
-	
 });
 
 //get the images
 
 ipc.on("recieveImages", function(event, arg) {
-	console.log(arg)
+	console.log(arg);
 	processArray(arg);
 	async function processArray(arg) {
 		imagesArr = {};
@@ -654,7 +614,11 @@ ipc.on("recieveImages", function(event, arg) {
 				var ratio = dimensions.w / 200;
 
 				var newHeight = dimensions.h / ratio;
-				var newImage = await ImagesActions.resizeDataUrl(newDataURI, 200, newHeight);
+				var newImage = await ImagesActions.resizeDataUrl(
+					newDataURI,
+					200,
+					newHeight
+				);
 
 				var d = new Date(item[2]);
 				var fdate = GetFormattedDate(d, userSettings["dateFormat"]);
@@ -708,16 +672,12 @@ ipc.on("update-available", function(event, arg) {
 	let response = dialog.showMessageBox(options);
 });
 
-
-
 ////////////////////////////////////////
 ////////////////////////////////////////
 ////////////////////////////////////////
 //HELPER///////////////////////////////
 ////////////////////////////////////
 ///////////////////////////////////////////
-
-
 
 function GetFormattedDate(d, format) {
 	var month = d.getMonth() + 1;
@@ -748,9 +708,6 @@ function GetFormattedDate(d, format) {
 	}
 }
 
-
-
-
 function isValidUrl(string) {
 	try {
 		new URL(string);
@@ -764,7 +721,3 @@ function isValidUrl(string) {
 		return false;
 	}
 }
-
-
-
-

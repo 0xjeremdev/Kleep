@@ -693,6 +693,7 @@ body {
 	display: flex;
 	justify-content: stretch;
 	align-items: stretch;
+	position: relative;
 	flex-direction: row;
 	margin-left: auto;
 	flex-shrink: 0;
